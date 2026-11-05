@@ -28,6 +28,18 @@ Content → Site Modules → New → เลือก **Colorpack Smart Search (�
 
 โมดูลใช้ฟอนต์ของเว็บ และมีสีกับรูปทรงในตัว จึงดูเหมือนกันในทุกเทมเพลต ปรับสีหลักให้เข้ากับเว็บได้
 
+## ใช้แทนช่องค้นหาของ YOOtheme
+
+YOOtheme สร้างปุ่มค้นหาในส่วนหัวจาก **โมดูล** ในตำแหน่งค้นหา (ไอคอนแว่นขยายที่เปิด modal หรือ dropdown) ส่วนที่ต้องเปลี่ยนคือโมดูลข้างใน ไม่ใช่ปุ่มของ YOOtheme
+
+1. Content → Site Modules ค้นหาโมดูลชนิด **Smart Search** (ของ Joomla เดิม) จดว่าอยู่ **ตำแหน่ง (Position)** อะไร และตั้ง **Menu Assignment** อย่างไร (เว็บมักมี 2 ตัว คือเดสก์ท็อปและมือถือ)
+2. New → **Colorpack Smart Search (ช่องค้นหา)** ใช้ตำแหน่งและ Menu Assignment เดียวกัน ตั้งสถานะ Published
+3. ตัวเลือกที่แนะนำ: ปุ่ม = ไอคอน หรือไม่มีปุ่ม, หน้าแสดงผลลัพธ์ = อัตโนมัติ (หรือเลือกเมนู Search page)
+4. **Unpublish** โมดูล Smart Search เดิม (ยังไม่ต้องลบ จนกว่าจะตรวจแล้ว)
+5. เปิดหน้าเว็บ คลิกไอคอนแว่นขยาย ช่องจะโฟกัสทันที พิมพ์แล้วเห็นคำแนะนำ
+
+ใช้เวอร์ชัน 0.8.1 ขึ้นไป (โมดูลโฟกัสช่องให้เองเมื่อ modal เปิด)
+
 ---
 
 <a id="english"></a>
@@ -59,3 +71,15 @@ Content → Site Modules → New → choose **Colorpack Smart Search (search box
 | Live suggestions / Popular searches | Turn each part on or off, and how many to show |
 
 The module uses your site's font and carries its own colours and shapes, so it looks the same in every template. Change the accent colour to match your site.
+
+### Replace the YOOtheme header search
+
+YOOtheme builds the header search button from a **module** in the search position (the magnifier icon that opens a modal or dropdown). You replace the module inside it, not YOOtheme's button.
+
+1. Content → Site Modules, find the **Smart Search** module (Joomla's own) and note its **Position** and **Menu Assignment** (sites often have two: desktop and mobile).
+2. New → **Colorpack Smart Search (search box)**, using the same position and Menu Assignment, and set it to Published.
+3. Suggested options: Button = icon or none, Results page = Automatic (or pick the Search page menu item).
+4. **Unpublish** the old Smart Search module (do not delete it until you have checked).
+5. Open the site and click the magnifier: the box is focused straight away, and suggestions appear as you type.
+
+Use version 0.8.1 or later (the module focuses the box by itself when the modal opens).

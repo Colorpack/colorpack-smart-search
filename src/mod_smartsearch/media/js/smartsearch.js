@@ -146,6 +146,13 @@
     document.addEventListener('pointerdown', function (ev) { if (!root.contains(ev.target)) setOpen(false); });
     form.addEventListener('submit', function () { setOpen(false); });
     syncClear();
+
+    // inside a YOOtheme / UIkit modal or drop (the header search): focus the box when it opens, close the list when it closes
+    var host = root.closest('.uk-modal, .uk-drop');
+    if (host) {
+      host.addEventListener('shown', function () { input.focus(); });
+      host.addEventListener('hidden', function () { setOpen(false); });
+    }
   }
 
   function boot() { document.querySelectorAll('[data-ssm]').forEach(init); }
