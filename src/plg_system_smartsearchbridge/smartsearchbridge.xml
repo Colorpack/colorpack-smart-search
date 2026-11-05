@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_SMARTSEARCHBRIDGE</name>
+    <author>Colorpack</author>
+    <creationDate>2026-11</creationDate>
+    <copyright>(C) Colorpack Creation Co., Ltd.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <version>0.9.0</version>
+    <description>PLG_SYSTEM_SMARTSEARCHBRIDGE_XML_DESCRIPTION</description>
+    <namespace path="src">Colorpack\Plugin\System\SmartSearchBridge</namespace>
+    <files>
+        <folder plugin="smartsearchbridge">services</folder>
+        <folder>src</folder>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/plg_system_smartsearchbridge.ini</language>
+        <language tag="en-GB">en-GB/plg_system_smartsearchbridge.sys.ini</language>
+        <language tag="th-TH">th-TH/plg_system_smartsearchbridge.ini</language>
+        <language tag="th-TH">th-TH/plg_system_smartsearchbridge.sys.ini</language>
+    </languages>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="menu_item" type="menuitem" label="PLG_SYSTEM_SMARTSEARCHBRIDGE_MENUITEM" description="PLG_SYSTEM_SMARTSEARCHBRIDGE_MENUITEM_DESC" default="">
+                    <option value="">PLG_SYSTEM_SMARTSEARCHBRIDGE_MENUITEM_AUTO</option>
+                </field>
+                <field name="redirect_code" type="list" label="PLG_SYSTEM_SMARTSEARCHBRIDGE_CODE" description="PLG_SYSTEM_SMARTSEARCHBRIDGE_CODE_DESC" default="302">
+                    <option value="302">PLG_SYSTEM_SMARTSEARCHBRIDGE_CODE_302</option>
+                    <option value="301">PLG_SYSTEM_SMARTSEARCHBRIDGE_CODE_301</option>
+                </field>
+                <field name="bridge_suggest" type="radio" label="PLG_SYSTEM_SMARTSEARCHBRIDGE_SUGGEST" description="PLG_SYSTEM_SMARTSEARCHBRIDGE_SUGGEST_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+            </fieldset>
+        </fields>
+    </config>
+</extension>

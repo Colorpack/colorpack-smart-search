@@ -30,6 +30,8 @@ Content → Site Modules → New → เลือก **Colorpack Smart Search (�
 
 ## ใช้แทนช่องค้นหาของ YOOtheme
 
+> ถ้าช่องค้นหาส่วนหัวของ YOOtheme ไม่ได้มาจากโมดูล (ไม่มีโมดูลค้นหาที่เปิดใช้อยู่) ให้ใช้ [ตัวส่งต่อจาก Smart Search เดิม](BRIDGE.md) แทน
+
 YOOtheme สร้างปุ่มค้นหาในส่วนหัวจาก **โมดูล** ในตำแหน่งค้นหา (ไอคอนแว่นขยายที่เปิด modal หรือ dropdown) ส่วนที่ต้องเปลี่ยนคือโมดูลข้างใน ไม่ใช่ปุ่มของ YOOtheme
 
 1. Content → Site Modules ค้นหาโมดูลชนิด **Smart Search** (ของ Joomla เดิม) จดว่าอยู่ **ตำแหน่ง (Position)** อะไร และตั้ง **Menu Assignment** อย่างไร (เว็บมักมี 2 ตัว คือเดสก์ท็อปและมือถือ)
@@ -73,6 +75,8 @@ Content → Site Modules → New → choose **Colorpack Smart Search (search box
 The module uses your site's font and carries its own colours and shapes, so it looks the same in every template. Change the accent colour to match your site.
 
 ### Replace the YOOtheme header search
+
+> If the YOOtheme header search is not a module (no search module is published), use the [bridge from the old Smart Search](BRIDGE.md) instead.
 
 YOOtheme builds the header search button from a **module** in the search position (the magnifier icon that opens a modal or dropdown). You replace the module inside it, not YOOtheme's button.
 
