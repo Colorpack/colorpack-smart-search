@@ -88,7 +88,11 @@ final class SmartSearchBridge extends CMSPlugin implements SubscriberInterface
             . 'var n=f.nextElementSibling;if(!n||!n.classList.contains("ssb-status")){var s=document.createElement("div");s.className="ssb-status";s.setAttribute("role","status");s.textContent=MSG;f.parentNode.insertBefore(s,f.nextSibling)}}'
             . 'function reset(){var b=document.getElementById("ssb-bar");if(b)b.remove();document.documentElement.classList.remove("ssb-busy");'
             . 'document.querySelectorAll(".ssb-status").forEach(function(x){x.remove()});document.querySelectorAll(".ssb-form-busy").forEach(function(f){f.classList.remove("ssb-form-busy");f.removeAttribute("aria-busy")})}'
-            . 'document.addEventListener("submit",function(ev){var f=ev.target;if(!f||!f.matches||!f.matches(SEL)||(f.closest&&f.closest("[data-ssm],.aisearch")))return;setTimeout(function(){if(!ev.defaultPrevented)busy(f)},0)},false);'
+            . 'function mine(f){return f&&f.matches&&f.matches(SEL)&&!(f.closest&&f.closest("[data-ssm],.aisearch"))}'
+            . '/* capture phase: Joomla\'s own finder.js stops the submit event from bubbling */'
+            . 'document.addEventListener("submit",function(ev){var f=ev.target;if(!mine(f))return;setTimeout(function(){if(!ev.defaultPrevented)busy(f)},0)},true);'
+            . '/* choosing one of Smart Search\'s suggestions sends the form with form.submit(), which fires no submit event */'
+            . 'document.addEventListener("awesomplete-selectcomplete",function(ev){var f=ev.target&&ev.target.closest&&ev.target.closest("form");if(mine(f))busy(f)},true);'
             . 'window.addEventListener("pageshow",function(e){if(e.persisted)reset()});})();';
         $wa = $doc->getWebAssetManager();
         $wa->addInlineStyle($css);

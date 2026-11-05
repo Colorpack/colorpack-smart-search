@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.9.2
+
+- **EN** Fixed: the "Searching…" indicator did not appear on the YOOtheme header search, because Joomla's own Smart Search script stops the form's submit event from reaching other scripts. The bridge plugin now listens earlier, and also covers choosing one of Smart Search's suggestions.
+- **ไทย** แก้: ข้อความ "กำลังค้นหา…" ไม่ขึ้นที่ช่องค้นหาส่วนหัวของ YOOtheme เพราะสคริปต์ Smart Search ของ Joomla หยุดเหตุการณ์ส่งฟอร์มไม่ให้ถึงสคริปต์อื่น ตอนนี้ปลั๊กอิน bridge ฟังก่อนหน้านั้น และครอบคลุมกรณีเลือกคำแนะนำของ Smart Search ด้วย
+
 ## 0.9.1
 
 - **EN** Searches now show that they are working: a bar at the top of the page and "Searching…" under the search box from the moment a search form is sent (the search results page, the search box module, and, through the bridge plugin, the YOOtheme header search and any other search form). Switch it off in the bridge plugin if you do not want it.
