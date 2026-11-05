@@ -16,6 +16,7 @@
 - **Choose a Layout ในเมนู** ตามมาตรฐาน Joomla และสร้างเลย์เอาต์เองได้ผ่าน template override ([คู่มือ](docs/LAYOUTS.md))
 - **เข้ากับเทมเพลต** ใช้มาร์กอัป UIkit กับ YOOtheme, Bootstrap 5 กับ Cassiopeia หรือสไตล์ของส่วนขยายเองกับเทมเพลตอื่น
 - **รูปประกอบผลลัพธ์** ดึงจาก Intro Image, Full Article Image, รูปแรกในเนื้อหา หรือฟิลด์รูปของ FlexiContent
+- **โมดูลช่องค้นหาทันสมัย** (`mod_smartsearch`) วางตรงไหนก็ได้ มีคำแนะนำขณะพิมพ์ (ชื่อบทความที่ตรงกัน เน้นคำที่พิมพ์) คำค้นยอดนิยมเมื่อคลิกช่องว่าง เลือกด้วยคีย์บอร์ดได้ รองรับอ่านออกเสียง (ARIA) และมือถือ ([คู่มือ](docs/MODULE.md))
 - **ดัชนีอัปเดตอัตโนมัติ** เมื่อบันทึก ลบ หรือเปลี่ยนสถานะบทความ (ปลั๊กอิน content)
 - **แดชบอร์ดผู้ดูแล** แสดงสถานะดัชนี จำนวนการค้นหา 30 วัน คำค้นยอดนิยม และคำที่ไม่มีผลลัพธ์
 
@@ -36,7 +37,8 @@
 2. Joomla ผู้ดูแล → System → Install → Extensions แล้วอัปโหลดไฟล์ zip
 3. Components → Colorpack Smart Search → กด **Build index**
 4. สร้างเมนู: Menus → New Menu Item → **Colorpack Smart Search → Search page** แล้วเลือกเลย์เอาต์ในช่อง *Choose a Layout*
-5. ปรับแต่งที่ปุ่ม **Options** (หน้าตา ฟอนต์ คำพ้อง คำค้นยอดนิยม รูป การแบ่งหน้า)
+5. (ไม่บังคับ) วางช่องค้นหา: Content → Site Modules → New → **Colorpack Smart Search (ช่องค้นหา)** เลือกตำแหน่ง และกำหนดให้แสดงทุกหน้า
+6. ปรับแต่งที่ปุ่ม **Options** (หน้าตา ฟอนต์ คำพ้อง คำค้นยอดนิยม รูป การแบ่งหน้า)
 
 ## ข้อควรรู้
 
@@ -80,6 +82,7 @@ Thai-aware search for Joomla: **correct Thai word segmentation**, BM25 ranking a
 - **Choose a Layout on the menu item**, the Joomla way, and your own layouts through template overrides ([guide](docs/LAYOUTS.md))
 - **Fits your template**: UIkit markup for YOOtheme, Bootstrap 5 for Cassiopeia, or the extension's own styles elsewhere
 - **Result pictures** from the Intro Image, the Full Article Image, the first image in the text, or a FlexiContent image field
+- **A modern search box module** (`mod_smartsearch`) to place anywhere: live suggestions while typing (matching article titles, typed text highlighted), popular searches when the empty box is clicked, keyboard control, screen-reader support (ARIA) and a mobile-friendly layout ([guide](docs/MODULE.md))
 - **The index updates itself** when an article is saved, deleted or changes state (content plugin)
 - **Admin dashboard**: index status, searches in the last 30 days, top searches and searches with no result
 
@@ -100,7 +103,8 @@ Thai-aware search for Joomla: **correct Thai word segmentation**, BM25 ranking a
 2. Joomla administrator → System → Install → Extensions, then upload the zip.
 3. Components → Colorpack Smart Search → press **Build index**.
 4. Create a menu item: Menus → New Menu Item → **Colorpack Smart Search → Search page**, and pick a layout in *Choose a Layout*.
-5. Adjust things with the **Options** button (appearance, fonts, synonyms, popular searches, images, pagination).
+5. (Optional) Add the search box: Content → Site Modules → New → **Colorpack Smart Search (search box)**, choose a position and show it on all pages.
+6. Adjust things with the **Options** button (appearance, fonts, synonyms, popular searches, images, pagination).
 
 ## Good to know
 

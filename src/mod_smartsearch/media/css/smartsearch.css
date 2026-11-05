@@ -1,0 +1,40 @@
+/* Colorpack Smart Search module: self-contained, inherits the site's font */
+.ssm{--ssm-accent:#3b8fe0;--ssm-ink:#2d3236;--ssm-gray:#666;--ssm-line:#d5dbe1;--ssm-h:52px;position:relative;box-sizing:border-box;width:100%;max-width:var(--ssm-max,640px);margin-left:auto;margin-right:auto;font-family:inherit;font-size:1rem;line-height:1.4;color:var(--ssm-ink)}
+.ssm *,.ssm *::before,.ssm *::after{box-sizing:border-box}
+.ssm-large{--ssm-h:64px;font-size:1.125rem}
+.ssm-form{position:relative;display:flex;align-items:center;gap:6px;height:var(--ssm-h);padding:0 6px 0 16px;margin:0;background:#fff;border:1.5px solid var(--ssm-line);border-radius:999px;box-shadow:0 1px 2px rgba(17,17,17,.05);transition:border-color .15s,box-shadow .15s}
+.ssm-rounded .ssm-form{border-radius:14px}
+.ssm-form:focus-within{border-color:var(--ssm-accent);box-shadow:0 0 0 4px rgba(59,143,224,.22)}
+@supports (color:color-mix(in srgb,red 20%,white)){.ssm-form:focus-within{box-shadow:0 0 0 4px color-mix(in srgb,var(--ssm-accent) 24%,transparent)}}
+.ssm-icon{display:inline-flex;flex:none;color:var(--ssm-gray)}
+.ssm-form:focus-within .ssm-icon{color:var(--ssm-accent)}
+.ssm .ssm-input{flex:1 1 auto;min-width:0;height:100%;margin:0;padding:0 4px;border:0;border-radius:0;background:transparent;box-shadow:none;outline:0;font:inherit;color:var(--ssm-ink);-webkit-appearance:none;appearance:none}
+.ssm .ssm-input::placeholder{color:#6b7279;opacity:1}
+.ssm .ssm-input::-webkit-search-cancel-button,.ssm .ssm-input::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.ssm .ssm-clear{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;margin:0;padding:0;border:0;border-radius:50%;background:transparent;color:var(--ssm-gray);cursor:pointer}
+.ssm .ssm-clear[hidden]{display:none}
+.ssm .ssm-clear:hover{background:rgba(17,17,17,.07);color:var(--ssm-ink)}
+.ssm .ssm-go{flex:none;display:inline-flex;align-items:center;justify-content:center;height:calc(var(--ssm-h) - 14px);min-width:calc(var(--ssm-h) - 14px);margin:0;padding:0 22px;border:0;border-radius:999px;background:var(--ssm-accent);color:#fff;font:inherit;font-weight:700;cursor:pointer;transition:filter .15s}
+.ssm-rounded .ssm-go{border-radius:10px}
+.ssm .ssm-go:hover{filter:brightness(.92)}
+.ssm-btn-icon .ssm-go{padding:0}
+.ssm .ssm-clear:focus-visible,.ssm .ssm-go:focus-visible{outline:3px solid var(--ssm-ink);outline-offset:2px}
+.ssm-btn-none .ssm-form{padding-right:10px}
+
+.ssm-pop{position:absolute;z-index:1000;left:0;right:0;top:calc(100% + 8px);max-height:min(70vh,440px);overflow:auto;padding:8px;background:#fff;border:1px solid var(--ssm-line);border-radius:18px;box-shadow:0 18px 48px rgba(17,17,17,.16);text-align:left}
+.ssm-rounded .ssm-pop{border-radius:14px}
+.ssm-pop[hidden]{display:none}
+.ssm-head{padding:8px 12px 4px;font-size:.8125em;color:var(--ssm-gray)}
+.ssm-opt{display:flex;align-items:center;gap:10px;width:100%;margin:0;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:var(--ssm-ink);font:inherit;text-align:left;text-decoration:none;cursor:pointer}
+.ssm-opt .ssm-ico{flex:none;display:inline-flex;color:var(--ssm-gray)}
+.ssm-opt .ssm-t{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ssm-opt .ssm-c{flex:none;max-width:40%;padding:2px 10px;border-radius:999px;background:#eaf6fc;color:#1f5fa8;font-size:.8125em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ssm-opt mark{background:transparent;color:inherit;font-weight:700;text-decoration:underline;text-decoration-color:var(--ssm-accent);text-decoration-thickness:2px;text-underline-offset:3px}
+.ssm-opt:hover,.ssm-opt[aria-selected="true"]{background:#eef5fc;text-decoration:none;color:var(--ssm-ink)}
+.ssm-opt[aria-selected="true"]{box-shadow:inset 3px 0 0 var(--ssm-accent)}
+.ssm-all{margin-top:4px;border-top:1px solid #eef1f4;border-radius:0 0 12px 12px;color:#1f5fa8;font-weight:700}
+.ssm-empty{padding:14px 12px;color:var(--ssm-gray)}
+.ssm-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0;white-space:nowrap}
+@media (max-width:640px){.ssm{width:calc(100% - 24px)}}
+@media (max-width:560px){.ssm .ssm-go{padding:0 16px}.ssm-opt .ssm-c{display:none}}
+@media (prefers-reduced-motion:reduce){.ssm-form,.ssm .ssm-go{transition:none}}

@@ -29,8 +29,35 @@ final class SearchService
         return $map;
     }
 
+    /**
+     * Fast suggestions for the search module: titles that contain the typed text first, then the best keyword matches.
+     * Uses only the database and the keyword index (never the AI), so it is cheap to call on every keystroke.
+     * @return array<int,object> rows of #__aisearch_docs
+     */
+    public function suggest(string $q, int $n = 6): array
+    {
+        $q = trim(preg_replace('/\s+/u', ' ', $q));
+        if (mb_strlen($q) < 2) {
+            return [];
+        }
+        $db = $this->db;
+        $esc = $db->escape(mb_substr($q, 0, 100), true);
+        $rows = $db->setQuery($db->getQuery(true)->select('id, catid, title, category')->from($db->quoteName('#__aisearch_docs'))
+            ->where($db->quoteName('title') . " LIKE '%" . $esc . "%'")
+            ->order("(" . $db->quoteName('title') . " LIKE '" . $esc . "%') DESC, CHAR_LENGTH(" . $db->quoteName('title') . ') ASC'), 0, $n)->loadObjectList('id');
+        if (count($rows) < $n) {
+            $r = $this->search($q, $n, 0, 20, false);
+            foreach ($r['items'] as $d) {
+                if (!isset($rows[$d->id]) && count($rows) < $n) {
+                    $rows[$d->id] = $d;
+                }
+            }
+        }
+        return array_values($rows);
+    }
+
     /** @return array{items:array,total:int,ms:float,indexed:bool,mode:string} mode = hybrid | keyword */
-    public function search(string $q, int $limit = 20, int $offset = 0, int $max = 100): array
+    public function search(string $q, int $limit = 20, int $offset = 0, int $max = 100, bool $semantic = true): array
     {
         $t0 = microtime(true);
         $bm = (new IndexStore($this->db))->load();

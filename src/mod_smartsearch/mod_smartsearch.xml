@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" client="site" method="upgrade">
+    <name>MOD_SMARTSEARCH</name>
+    <author>Colorpack</author>
+    <creationDate>2026-11</creationDate>
+    <copyright>(C) Colorpack Creation Co., Ltd.</copyright>
+    <license>GNU General Public License version 2 or later</license>
+    <version>0.8.0</version>
+    <description>MOD_SMARTSEARCH_XML_DESCRIPTION</description>
+    <namespace path="src">Colorpack\Module\SmartSearch</namespace>
+    <files>
+        <folder module="mod_smartsearch">services</folder>
+        <folder>src</folder>
+        <folder>tmpl</folder>
+    </files>
+    <languages folder="language">
+        <language tag="en-GB">en-GB/mod_smartsearch.ini</language>
+        <language tag="en-GB">en-GB/mod_smartsearch.sys.ini</language>
+        <language tag="th-TH">th-TH/mod_smartsearch.ini</language>
+        <language tag="th-TH">th-TH/mod_smartsearch.sys.ini</language>
+    </languages>
+    <media destination="mod_smartsearch" folder="media">
+        <folder>css</folder>
+        <folder>js</folder>
+        <filename>joomla.asset.json</filename>
+    </media>
+    <config>
+        <fields name="params">
+            <fieldset name="basic">
+                <field name="menu_item" type="menuitem" label="MOD_SMARTSEARCH_MENUITEM" description="MOD_SMARTSEARCH_MENUITEM_DESC" default="">
+                    <option value="">MOD_SMARTSEARCH_MENUITEM_AUTO</option>
+                </field>
+                <field name="placeholder" type="text" label="MOD_SMARTSEARCH_PLACEHOLDER" description="MOD_SMARTSEARCH_PLACEHOLDER_DESC" default="" />
+                <field name="shape" type="list" label="MOD_SMARTSEARCH_STYLE" default="pill">
+                    <option value="pill">MOD_SMARTSEARCH_STYLE_PILL</option>
+                    <option value="rounded">MOD_SMARTSEARCH_STYLE_ROUNDED</option>
+                </field>
+                <field name="size" type="list" label="MOD_SMARTSEARCH_SIZE" default="normal">
+                    <option value="normal">MOD_SMARTSEARCH_SIZE_NORMAL</option>
+                    <option value="large">MOD_SMARTSEARCH_SIZE_LARGE</option>
+                </field>
+                <field name="button" type="list" label="MOD_SMARTSEARCH_BUTTON" default="label">
+                    <option value="label">MOD_SMARTSEARCH_BUTTON_LABEL</option>
+                    <option value="icon">MOD_SMARTSEARCH_BUTTON_ICON</option>
+                    <option value="none">MOD_SMARTSEARCH_BUTTON_NONE</option>
+                </field>
+                <field name="accent" type="color" label="MOD_SMARTSEARCH_ACCENT" description="MOD_SMARTSEARCH_ACCENT_DESC" default="#3b8fe0" />
+                <field name="max_width" type="number" label="MOD_SMARTSEARCH_MAXW" description="MOD_SMARTSEARCH_MAXW_DESC" default="640" min="0" max="1400" filter="integer" />
+                <field name="live" type="radio" label="MOD_SMARTSEARCH_LIVE" description="MOD_SMARTSEARCH_LIVE_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="popular" type="radio" label="MOD_SMARTSEARCH_POPULAR" description="MOD_SMARTSEARCH_POPULAR_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer">
+                    <option value="0">JNO</option>
+                    <option value="1">JYES</option>
+                </field>
+                <field name="count" type="number" label="MOD_SMARTSEARCH_COUNT" default="6" min="3" max="10" filter="integer" />
+            </fieldset>
+            <fieldset name="advanced">
+                <field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL" validate="options" />
+                <field name="moduleclass_sfx" type="textarea" label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" rows="3" validate="CssIdentifier" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

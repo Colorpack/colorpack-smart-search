@@ -1,0 +1,11 @@
+{
+    "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+    "name": "mod_smartsearch",
+    "version": "0.8.0",
+    "description": "Colorpack Smart Search module",
+    "license": "GPL-2.0-or-later",
+    "assets": [
+        {"name": "mod_smartsearch.css", "type": "style", "uri": "mod_smartsearch/smartsearch.css"},
+        {"name": "mod_smartsearch.js", "type": "script", "uri": "mod_smartsearch/smartsearch.js", "attributes": {"defer": true}}
+    ]
+}
