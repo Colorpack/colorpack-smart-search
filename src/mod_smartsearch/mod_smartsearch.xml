@@ -5,7 +5,7 @@
     <creationDate>2026-11</creationDate>
     <copyright>(C) Colorpack Creation Co., Ltd.</copyright>
     <license>GNU General Public License version 2 or later</license>
-    <version>0.8.1</version>
+    <version>0.8.2</version>
     <description>MOD_SMARTSEARCH_XML_DESCRIPTION</description>
     <namespace path="src">Colorpack\Module\SmartSearch</namespace>
     <files>
@@ -57,7 +57,7 @@
                 <field name="count" type="number" label="MOD_SMARTSEARCH_COUNT" default="6" min="3" max="10" filter="integer" />
             </fieldset>
             <fieldset name="advanced">
-                <field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL" validate="options" />
+                <field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL" class="form-select" validate="ModuleLayout" />
                 <field name="moduleclass_sfx" type="textarea" label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL" rows="3" validate="CssIdentifier" />
             </fieldset>
         </fields>
