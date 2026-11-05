@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <fieldset name="search" label="COM_AISEARCH_CONFIG_SEARCH">
+        <field name="results_per_page" type="number" label="COM_AISEARCH_CONFIG_RESULTS" description="COM_AISEARCH_CONFIG_RESULTS_DESC" default="20" min="5" max="50" filter="integer" />
+        <field name="max_results" type="number" label="COM_AISEARCH_CONFIG_MAXRESULTS" description="COM_AISEARCH_CONFIG_MAXRESULTS_DESC" default="100" min="20" max="300" filter="integer" />
+        <field name="synonyms" type="textarea" label="COM_AISEARCH_CONFIG_SYNONYMS" description="COM_AISEARCH_CONFIG_SYNONYMS_DESC" rows="12" cols="60" filter="raw"
+            default="เบื่ออาหาร = กินยาก, ไม่ยอมกินข้าว, เบื่อข้าว&#10;กินยาก = เบื่ออาหาร, เลือกกิน, ไม่ยอมกิน&#10;ตัวเล็ก = เตี้ย, ไม่สูง, น้ำหนักน้อย&#10;ไม่โต = ไม่สูง, เตี้ย, ตัวเล็ก, โตช้า&#10;ลูกสูง = ส่วนสูง, สูงตามเกณฑ์, เพิ่มความสูง&#10;พูดช้า = พูดไม่ชัด, พัฒนาการทางภาษา, ไม่ยอมพูด&#10;ติดจอ = ดูมือถือ, เล่นแท็บเล็ต, หน้าจอ" />
+    </fieldset>
+    <fieldset name="appearance" label="COM_AISEARCH_CONFIG_APPEARANCE">
+        <field name="display_mode" type="list" label="COM_AISEARCH_CONFIG_DISPLAY" description="COM_AISEARCH_CONFIG_DISPLAY_DESC" default="both_list">
+            <option value="both_list">COM_AISEARCH_DISPLAY_BOTH_LIST</option>
+            <option value="both_card">COM_AISEARCH_DISPLAY_BOTH_CARD</option>
+            <option value="list">COM_AISEARCH_DISPLAY_LIST</option>
+            <option value="card">COM_AISEARCH_DISPLAY_CARD</option>
+        </field>
+        <field name="list_show_image" type="radio" label="COM_AISEARCH_CONFIG_LISTIMG" description="COM_AISEARCH_CONFIG_LISTIMG_DESC" layout="joomla.form.field.radio.switcher" default="0" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="panel_tint" type="radio" label="COM_AISEARCH_CONFIG_TINT" description="COM_AISEARCH_CONFIG_TINT_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="header_badge" type="text" label="COM_AISEARCH_CONFIG_BADGE" description="COM_AISEARCH_CONFIG_BADGE_DESC" default="" showon="show_header:1" />
+        <field name="show_header" type="radio" label="COM_AISEARCH_CONFIG_SHOWHEADER" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="header_title" type="text" label="COM_AISEARCH_CONFIG_HTITLE" default="ค้นหา" showon="show_header:1" />
+        <field name="header_text" type="textarea" label="COM_AISEARCH_CONFIG_HTEXT" rows="2" cols="60" default="" showon="show_header:1" filter="string" />
+        <field name="placeholder_text" type="text" label="COM_AISEARCH_CONFIG_PHTEXT" default="พิมพ์คำที่ต้องการค้นหา" />
+        <field name="popular_mode" type="list" label="COM_AISEARCH_CONFIG_POPMODE" description="COM_AISEARCH_CONFIG_POPMODE_DESC" default="auto">
+            <option value="auto">COM_AISEARCH_POPMODE_AUTO</option>
+            <option value="manual">COM_AISEARCH_POPMODE_MANUAL</option>
+            <option value="off">COM_AISEARCH_POPMODE_OFF</option>
+        </field>
+        <field name="popular_count" type="number" label="COM_AISEARCH_CONFIG_POPCOUNT" default="6" min="1" max="12" filter="integer" showon="popular_mode:auto" />
+        <field name="popular_days" type="number" label="COM_AISEARCH_CONFIG_POPDAYS" default="30" min="1" max="365" filter="integer" showon="popular_mode:auto" />
+        <field name="popular_min" type="number" label="COM_AISEARCH_CONFIG_POPMIN" description="COM_AISEARCH_CONFIG_POPMIN_DESC" default="3" min="1" max="100" filter="integer" showon="popular_mode:auto" />
+        <field name="example_queries" type="textarea" label="COM_AISEARCH_CONFIG_EXAMPLES" description="COM_AISEARCH_CONFIG_EXAMPLES_DESC" rows="5" cols="60" filter="string" showon="popular_mode:auto[OR]popular_mode:manual" />
+        <field name="font_mode" type="list" label="COM_AISEARCH_CONFIG_FONT" description="COM_AISEARCH_CONFIG_FONT_DESC" default="demo">
+            <option value="demo">COM_AISEARCH_FONT_DEMO</option>
+            <option value="template">COM_AISEARCH_FONT_TEMPLATE</option>
+            <option value="sarabun">Sarabun (Google Fonts)</option>
+            <option value="prompt">Prompt (Google Fonts)</option>
+            <option value="kanit">Kanit (Google Fonts)</option>
+            <option value="ibm">IBM Plex Sans Thai (Google Fonts)</option>
+            <option value="custom">COM_AISEARCH_FONT_CUSTOM</option>
+        </field>
+        <field name="font_custom" type="text" label="COM_AISEARCH_CONFIG_FONTCUSTOM" description="COM_AISEARCH_CONFIG_FONTCUSTOM_DESC" default="" showon="font_mode:custom" />
+        <field name="font_scale" type="number" label="COM_AISEARCH_CONFIG_FONTSCALE" description="COM_AISEARCH_CONFIG_FONTSCALE_DESC" default="100" min="80" max="130" step="5" filter="integer" />
+        <field name="search_style" type="list" label="COM_AISEARCH_CONFIG_SEARCHSTYLE" default="pretty">
+            <option value="pretty">COM_AISEARCH_SEARCHSTYLE_PRETTY</option>
+            <option value="theme">COM_AISEARCH_SEARCHSTYLE_THEME</option>
+        </field>
+        <field name="brand_color" type="color" label="COM_AISEARCH_CONFIG_BRAND" description="COM_AISEARCH_CONFIG_BRAND_DESC" default="#e5365f" />
+        <field name="search_width" type="number" label="COM_AISEARCH_CONFIG_SEARCHW" description="COM_AISEARCH_CONFIG_SEARCHW_DESC" default="760" min="0" max="1400" filter="integer" />
+        <field name="template_mode" type="list" label="COM_AISEARCH_CONFIG_TPLMODE" description="COM_AISEARCH_CONFIG_TPLMODE_DESC" default="auto">
+            <option value="auto">COM_AISEARCH_TPLMODE_AUTO</option>
+            <option value="yootheme">COM_AISEARCH_TPLMODE_YOO</option>
+            <option value="bootstrap">COM_AISEARCH_TPLMODE_BS</option>
+            <option value="plain">COM_AISEARCH_TPLMODE_PLAIN</option>
+        </field>
+        <field name="columns" type="list" label="COM_AISEARCH_CONFIG_COLUMNS" default="3">
+            <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+        </field>
+        <field name="max_tags" type="number" label="COM_AISEARCH_CONFIG_MAXTAGS" description="COM_AISEARCH_CONFIG_MAXTAGS_DESC" default="5" min="0" max="10" filter="integer" />
+        <field name="card_footer" type="list" label="COM_AISEARCH_CONFIG_CARDFOOTER" default="category">
+            <option value="category">COM_AISEARCH_FOOTER_CAT</option>
+            <option value="tags">COM_AISEARCH_FOOTER_TAGS</option>
+            <option value="both">COM_AISEARCH_FOOTER_BOTH</option>
+        </field>
+        <field name="card_max_tags" type="number" label="COM_AISEARCH_CONFIG_CARDTAGS" default="3" min="0" max="10" filter="integer" />
+        <field name="equal_cards" type="radio" label="COM_AISEARCH_CONFIG_EQUAL" description="COM_AISEARCH_CONFIG_EQUAL_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="card_w" type="number" label="COM_AISEARCH_CONFIG_CARD_W" default="1200" min="1" filter="integer" />
+        <field name="card_h" type="number" label="COM_AISEARCH_CONFIG_CARD_H" description="COM_AISEARCH_CONFIG_CARD_DESC" default="630" min="1" filter="integer" />
+        <field name="list_w" type="number" label="COM_AISEARCH_CONFIG_LIST_W" default="180" min="40" max="600" filter="integer" showon="list_show_image:1" />
+        <field name="list_h" type="number" label="COM_AISEARCH_CONFIG_LIST_H" default="120" min="30" max="600" filter="integer" showon="list_show_image:1" />
+        <field name="image_prefix" type="list" label="COM_AISEARCH_CONFIG_IMGSIZE" description="COM_AISEARCH_CONFIG_IMGSIZE_DESC" default="l_">
+            <option value="l_">COM_AISEARCH_IMGSIZE_L</option>
+            <option value="m_">COM_AISEARCH_IMGSIZE_M</option>
+            <option value="s_">COM_AISEARCH_IMGSIZE_S</option>
+        </field>
+        <field name="excerpt_length" type="number" label="COM_AISEARCH_CONFIG_EXCERPT" default="100" min="30" max="200" filter="integer" />
+        <field name="show_category" type="radio" label="COM_AISEARCH_CONFIG_SHOWCAT" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="show_date" type="radio" label="COM_AISEARCH_CONFIG_SHOWDATE" layout="joomla.form.field.radio.switcher" default="0" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="image_source" type="list" label="COM_AISEARCH_CONFIG_IMGSRC" description="COM_AISEARCH_CONFIG_IMGSRC_DESC" default="auto">
+            <option value="auto">COM_AISEARCH_IMGSRC_AUTO</option>
+            <option value="intro">COM_AISEARCH_IMGSRC_INTRO</option>
+            <option value="fulltext">COM_AISEARCH_IMGSRC_FULL</option>
+            <option value="text">COM_AISEARCH_IMGSRC_TEXT</option>
+            <option value="flexicontent">COM_AISEARCH_IMGSRC_FC</option>
+        </field>
+        <field name="image_fallback" type="radio" label="COM_AISEARCH_CONFIG_IMGFALLBACK" description="COM_AISEARCH_CONFIG_IMGFALLBACK_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="image_field_id" type="number" label="COM_AISEARCH_CONFIG_FCFIELD" description="COM_AISEARCH_CONFIG_FCFIELD_DESC" default="0" min="0" filter="integer" />
+        <field name="show_placeholder" type="radio" label="COM_AISEARCH_CONFIG_SHOWPH" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
+        <field name="placeholder_image" type="text" label="COM_AISEARCH_CONFIG_PH" default="/images/default-main-item.jpg" />
+    </fieldset>
+    <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
+        <field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" filter="rules" component="com_aisearch" section="component" />
+    </fieldset>
+</config>

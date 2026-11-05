@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="component" method="upgrade">
+    <name>com_aisearch</name>
+    <author>Colorpack</author>
+    <creationDate>2026-11</creationDate>
+    <version>0.7.0</version>
+    <description>COM_AISEARCH_XML_DESCRIPTION</description>
+    <namespace path="src">Colorpack\Component\AiSearch</namespace>
+    <install><sql><file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file></sql></install>
+    <uninstall><sql><file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file></sql></uninstall>
+    <files folder="site">
+        <folder>src</folder>
+        <folder>tmpl</folder>
+    </files>
+    <administration>
+        <menu link="option=com_aisearch">COM_AISEARCH</menu>
+        <files folder="admin">
+            <filename>access.xml</filename>
+            <filename>config.xml</filename>
+            <folder>services</folder>
+            <folder>sql</folder>
+            <folder>src</folder>
+            <folder>tmpl</folder>
+        </files>
+        <languages folder="admin/language">
+            <language tag="en-GB">en-GB/com_aisearch.ini</language>
+            <language tag="en-GB">en-GB/com_aisearch.sys.ini</language>
+            <language tag="th-TH">th-TH/com_aisearch.ini</language>
+            <language tag="th-TH">th-TH/com_aisearch.sys.ini</language>
+        </languages>
+    </administration>
+</extension>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="package" method="upgrade">
+    <name>Colorpack Search Light</name>
+    <packagename>aisearch</packagename>
+    <author>Colorpack</author>
+    <creationDate>2026-11</creationDate>
+    <version>0.7.0</version>
+    <description>Thai-aware keyword search for Joomla: word segmentation, ranking and synonyms. No external services, no API keys. / ระบบค้นหาภาษาไทยสำหรับ Joomla: ตัดคำไทย จัดอันดับผล และคำพ้อง ไม่ใช้บริการภายนอก ไม่ต้องมี API key</description>
+    <scriptfile>pkg_script.php</scriptfile>
+    <files>
+        <file type="component" id="com_aisearch">com_aisearch.zip</file>
+        <file type="plugin" id="aisearch" group="content">plg_content_aisearch.zip</file>
+    </files>
+</extension>
