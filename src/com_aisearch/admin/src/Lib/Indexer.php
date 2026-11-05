@@ -156,7 +156,7 @@ final class Indexer
     {
         $db = $this->db;
         $q = $db->getQuery(true)
-            ->select('a.id, a.title, a.catid, a.created, a.metadesc, a.images, a.introtext, ' . $db->quoteName('a.fulltext') . ', c.title AS category')
+            ->select('a.id, a.title, a.catid, a.created, a.publish_up, a.publish_down, a.access, a.metadesc, a.images, a.introtext, ' . $db->quoteName('a.fulltext') . ', c.title AS category')
             ->from($db->quoteName('#__content', 'a'))
             ->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON c.id = a.catid')
             ->where('a.state = 1')->order('a.id');
@@ -184,6 +184,12 @@ final class Indexer
         return $out;
     }
 
+    private static function dateOrNull($d): ?string
+    {
+        $d = trim((string) $d);
+        return ($d === '' || str_starts_with($d, '0000')) ? null : $d;
+    }
+
     private function addRow(Bm25 $bm, object $r, array $tags, array $fc = []): void
     {
         $tags = array_values(array_unique($tags));
@@ -199,6 +205,7 @@ final class Indexer
             'id' => (int) $r->id, 'catid' => (int) $r->catid, 'title' => mb_substr(trim($r->title), 0, 255),
             'category' => mb_substr((string) $r->category, 0, 255), 'tags' => implode(', ', array_slice($tags, 0, 10)),
             'created' => $r->created, 'snippet' => mb_substr((string) $snippet, 0, 200), 'image' => mb_substr($image, 0, 400), 'image_kind' => $kind,
+            'publish_up' => self::dateOrNull($r->publish_up ?? null), 'publish_down' => self::dateOrNull($r->publish_down ?? null), 'access' => max(1, (int) ($r->access ?? 1)),
         ];
         $this->db->insertObject('#__aisearch_docs', $row);
     }

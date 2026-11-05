@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS `#__aisearch_docs` (
   `snippet` varchar(400) NOT NULL DEFAULT '',
   `image` varchar(400) NOT NULL DEFAULT '',
   `image_kind` varchar(4) NOT NULL DEFAULT '',
+  `publish_up` datetime DEFAULT NULL,
+  `publish_down` datetime DEFAULT NULL,
+  `access` int unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

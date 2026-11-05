@@ -19,6 +19,10 @@ class Pkg_AisearchInstallerScript
         if ($docCols && !isset($docCols['image'])) {
             $db->setQuery("ALTER TABLE `#__aisearch_docs` ADD COLUMN `image` varchar(400) NOT NULL DEFAULT '', ADD COLUMN `image_kind` varchar(4) NOT NULL DEFAULT ''")->execute();
         }
+        if ($docCols && !isset($docCols['publish_up'])) {
+            // publish dates and access level, so scheduled / expired / members-only articles are handled when searching
+            $db->setQuery("ALTER TABLE `#__aisearch_docs` ADD COLUMN `publish_up` datetime DEFAULT NULL, ADD COLUMN `publish_down` datetime DEFAULT NULL, ADD COLUMN `access` int unsigned NOT NULL DEFAULT 1")->execute();
+        }
         $cols = $db->getTableColumns('#__aisearch_log');
         if ($cols && !isset($cols['mode'])) {
             $db->setQuery("ALTER TABLE `#__aisearch_log` ADD COLUMN `mode` varchar(10) NOT NULL DEFAULT 'keyword'")->execute();

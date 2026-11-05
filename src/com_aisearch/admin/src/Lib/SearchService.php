@@ -30,6 +30,42 @@ final class SearchService
     }
 
     /**
+     * SQL conditions that hide articles which are not visible to this visitor right now: not yet published, already expired,
+     * or in an access level the visitor does not have. Checked at search time, so nothing has to run when a date arrives.
+     */
+    private function visibleWhere(): string
+    {
+        $db = $this->db;
+        $now = $db->quote(gmdate('Y-m-d H:i:s'));
+        try {
+            $user = \Joomla\CMS\Factory::getApplication()->getIdentity();
+            $levels = $user ? array_map('intval', $user->getAuthorisedViewLevels()) : [1];
+        } catch (\Throwable $e) {
+            $levels = [1];
+        }
+        $levels = $levels ?: [1];
+        return '(' . $db->quoteName('publish_up') . ' IS NULL OR ' . $db->quoteName('publish_up') . ' <= ' . $now . ')'
+            . ' AND (' . $db->quoteName('publish_down') . ' IS NULL OR ' . $db->quoteName('publish_down') . ' > ' . $now . ')'
+            . ' AND ' . $db->quoteName('access') . ' IN (' . implode(',', $levels) . ')';
+    }
+
+    /** @param int[] $ids @return int[] the ids the visitor may see, in the same order */
+    private function onlyVisible(array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+        try {
+            $db = $this->db;
+            $ok = array_flip(array_map('intval', $db->setQuery('SELECT id FROM ' . $db->quoteName('#__aisearch_docs')
+                . ' WHERE id IN (' . implode(',', array_map('intval', $ids)) . ') AND ' . $this->visibleWhere())->loadColumn() ?: []));
+        } catch (\Throwable $e) {
+            return $ids;   // an index from before the upgrade has no date columns yet: show everything until it is rebuilt
+        }
+        return array_values(array_filter($ids, static fn ($id) => isset($ok[(int) $id])));
+    }
+
+    /**
      * Fast suggestions for the search module: titles that contain the typed text first, then the best keyword matches.
      * Uses only the database and the keyword index (never the AI), so it is cheap to call on every keystroke.
      * @return array<int,object> rows of #__aisearch_docs
@@ -44,6 +80,7 @@ final class SearchService
         $esc = $db->escape(mb_substr($q, 0, 100), true);
         $rows = $db->setQuery($db->getQuery(true)->select('id, catid, title, category')->from($db->quoteName('#__aisearch_docs'))
             ->where($db->quoteName('title') . " LIKE '%" . $esc . "%'")
+            ->where($this->visibleWhere())
             ->order("(" . $db->quoteName('title') . " LIKE '" . $esc . "%') DESC, CHAR_LENGTH(" . $db->quoteName('title') . ') ASC'), 0, $n)->loadObjectList('id');
         if (count($rows) < $n) {
             $r = $this->search($q, $n, 0, 20, false);
@@ -80,7 +117,7 @@ final class SearchService
             $weights[] = 0.5;
         }
         $mode = 'keyword';
-        $all = array_slice(array_keys(Rrf::fuse($rankings, 60, $weights)), 0, $max);
+        $all = array_slice($this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights))), 0, $max);
         $total = count($all);
         $ids = array_slice($all, max(0, $offset), $limit);
         $items = [];

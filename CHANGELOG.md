@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.9.3
+
+- **EN** Scheduled and restricted articles are handled correctly when searching. An article with a future *Start publishing* date no longer shows up before that date, an article whose *Finish publishing* date has passed stops showing up, and articles in an access level the visitor does not have (for example Registered) are hidden. This is checked at search time, so nothing has to run when a date arrives. The upgrade adds three columns to the document table; articles indexed before the upgrade are treated as public and always visible until the index is rebuilt once.
+- **ไทย** จัดการบทความที่ตั้งเวลาเผยแพร่และจำกัดสิทธิ์ได้ถูกต้องเมื่อค้นหา บทความที่ตั้งวันเริ่มเผยแพร่ล่วงหน้าจะไม่โผล่ก่อนถึงวัน บทความที่ผ่านวันสิ้นสุดการเผยแพร่แล้วจะไม่โผล่อีก และบทความในระดับการเข้าถึงที่ผู้เข้าชมไม่มีสิทธิ์ (เช่น Registered) จะถูกซ่อน ตรวจตอนค้น จึงไม่ต้องมีงานเบื้องหลังเมื่อถึงวันที่กำหนด การอัปเกรดเพิ่ม 3 คอลัมน์ในตารางเอกสาร บทความที่ทำดัชนีไว้ก่อนอัปเกรดจะถูกมองเป็นสาธารณะและแสดงเสมอ จนกว่าจะ Rebuild ดัชนีหนึ่งครั้ง
+
 ## 0.9.2
 
 - **EN** Fixed: the "Searching…" indicator did not appear on the YOOtheme header search, because Joomla's own Smart Search script stops the form's submit event from reaching other scripts. The bridge plugin now listens earlier, and also covers choosing one of Smart Search's suggestions.
