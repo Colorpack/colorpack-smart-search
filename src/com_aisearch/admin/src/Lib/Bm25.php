@@ -3,10 +3,16 @@ declare(strict_types=1);
 
 namespace Colorpack\Component\AiSearch\Administrator\Lib;
 
-/** In-memory BM25 (fine for ~10^4 docs; persist via serialize()/cache). */
+/**
+ * BM25 over an in-memory inverted index (fine for ~10^4 docs; persist via serialize()/cache).
+ *
+ * Postings are kept as one packed string per term (big-endian uint32 pairs: doc id, term frequency) instead of a nested
+ * PHP array. That makes the saved index several times smaller and, above all, fast to load on every search request:
+ * a query only unpacks the postings of its own words. Older indexes (nested arrays) still work and are converted by compact().
+ */
 final class Bm25
 {
-    /** @var array<string,array<int,int>> term => [docId => tf] */
+    /** @var array<string,string|array<int,int>> term => packed (id,tf) pairs; the old format is term => [docId => tf] */
     private array $postings = [];
     /** @var array<int,int> */
     private array $len = [];
@@ -19,7 +25,12 @@ final class Bm25
     {
         $this->len[$id] = count($tokens);
         foreach (array_count_values($tokens) as $t => $tf) {
-            $this->postings[(string)$t][$id] = $tf;
+            $t = (string) $t;
+            $p = $this->postings[$t] ?? '';
+            if (is_array($p)) {
+                $p = self::pack($p);
+            }
+            $this->postings[$t] = $p . pack('NN', $id, $tf);
         }
         $this->avg = array_sum($this->len) / max(1, count($this->len));
     }
@@ -27,13 +38,59 @@ final class Bm25
     public function remove(int $id): void
     {
         unset($this->len[$id]);
-        foreach ($this->postings as $t => &$p) {
-            unset($p[$id]);
-            if (!$p) {
+        $needle = pack('N', $id);
+        foreach ($this->postings as $t => $p) {
+            if (is_array($p)) {
+                unset($p[$id]);
+                $p = self::pack($p);
+            } else {
+                // pairs are 8 bytes: only a hit on an 8-byte boundary is a doc id
+                $off = 0;
+                while (($pos = strpos($p, $needle, $off)) !== false) {
+                    if ($pos % 8 === 0) {
+                        $p = substr($p, 0, $pos) . substr($p, $pos + 8);
+                        $off = $pos;
+                    } else {
+                        $off = $pos + 1;
+                    }
+                }
+            }
+            if ($p === '') {
                 unset($this->postings[$t]);
+            } else {
+                $this->postings[$t] = $p;
             }
         }
         $this->avg = $this->len ? array_sum($this->len) / count($this->len) : 0.0;
+    }
+
+    /** True when every term is already in the packed format. */
+    public function isCompact(): bool
+    {
+        foreach ($this->postings as $p) {
+            return !is_array($p);   // an index is built in one format, so the first term tells
+        }
+        return true;
+    }
+
+    /** Converts an index saved in the old nested-array format. */
+    public function compact(): void
+    {
+        foreach ($this->postings as $t => $p) {
+            if (is_array($p)) {
+                $this->postings[$t] = self::pack($p);
+            }
+        }
+    }
+
+    /** @param array<int,int> $idToTf */
+    private static function pack(array $idToTf): string
+    {
+        $s = '';
+        foreach ($idToTf as $id => $tf) {
+            $s .= pack('NN', $id, $tf);
+        }
+        return $s;
     }
 
     /** @param string[] $queryTokens @return array<int,float> id => score, best first */
@@ -41,18 +98,32 @@ final class Bm25
     {
         $n = count($this->len);
         $scores = [];
+        $avg = $this->avg ?: 1;
         foreach (array_unique($queryTokens) as $t) {
             $p = $this->postings[$t] ?? null;
-            if (!$p) {
+            if ($p === null || $p === '' || $p === []) {
                 continue;
             }
-            $idf = log(1 + ($n - count($p) + 0.5) / (count($p) + 0.5));
-            foreach ($p as $id => $tf) {
-                $norm = $tf + $this->k1 * (1 - $this->b + $this->b * $this->len[$id] / ($this->avg ?: 1));
+            $pairs = is_array($p) ? $p : $this->unpackPairs($p);
+            $df = count($pairs);
+            $idf = log(1 + ($n - $df + 0.5) / ($df + 0.5));
+            foreach ($pairs as $id => $tf) {
+                $norm = $tf + $this->k1 * (1 - $this->b + $this->b * $this->len[$id] / $avg);
                 $scores[$id] = ($scores[$id] ?? 0) + $idf * $tf * ($this->k1 + 1) / $norm;
             }
         }
         arsort($scores);
         return array_slice($scores, 0, $k, true);
+    }
+
+    /** @return array<int,int> docId => tf */
+    private function unpackPairs(string $p): array
+    {
+        $u = unpack('N*', $p);
+        $out = [];
+        for ($i = 1, $c = count($u); $i < $c; $i += 2) {
+            $out[$u[$i]] = $u[$i + 1];
+        }
+        return $out;
     }
 }

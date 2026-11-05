@@ -24,7 +24,7 @@
     var clearBtn = root.querySelector('.ssm-clear'), status = root.querySelector('.ssm-sr');
     var base = root.getAttribute('data-suggest'), n = parseInt(root.getAttribute('data-n'), 10) || 6;
     var live = root.getAttribute('data-live') === '1', usePopular = root.getAttribute('data-popular') === '1';
-    var T = { popular: root.getAttribute('data-t-popular'), all: root.getAttribute('data-t-all'), none: root.getAttribute('data-t-none'), count: root.getAttribute('data-t-count') };
+    var T = { searching: root.getAttribute('data-t-searching') || '', popular: root.getAttribute('data-t-popular'), all: root.getAttribute('data-t-all'), none: root.getAttribute('data-t-none'), count: root.getAttribute('data-t-count') };
     var opts = [], active = -1, ctrl = null, timer = null, popularCache = null, seq = 0;
 
     function setOpen(open) {
@@ -144,7 +144,24 @@
     });
     clearBtn.addEventListener('click', function () { input.value = ''; syncClear(); input.focus(); update(); });
     document.addEventListener('pointerdown', function (ev) { if (!root.contains(ev.target)) setOpen(false); });
-    form.addEventListener('submit', function () { setOpen(false); });
+    // a search (or a click on a suggestion) leaves the page: show that something is happening until the next page arrives
+    function busy() {
+      root.classList.add('ssm-busy');
+      form.setAttribute('aria-busy', 'true');
+      status.textContent = T.searching;
+      if (!document.getElementById('ssb-bar')) {
+        var b = document.createElement('div'); b.id = 'ssb-bar'; b.setAttribute('role', 'progressbar'); b.setAttribute('aria-label', T.searching);
+        b.appendChild(document.createElement('i')); document.body.appendChild(b);
+      }
+      pop.textContent = ''; opts = []; active = -1;
+      pop.appendChild(el('div', 'ssm-empty ssm-working', T.searching));
+      pop.hidden = false;
+    }
+    form.addEventListener('submit', function () { setTimeout(function () { busy(); }, 0); });
+    pop.addEventListener('click', function (ev) { var a = ev.target.closest && ev.target.closest('a.ssm-opt'); if (a) busy(); });
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) { root.classList.remove('ssm-busy'); form.removeAttribute('aria-busy'); setOpen(false); var bb = document.getElementById('ssb-bar'); if (bb) bb.remove(); }
+    });
     syncClear();
 
     // inside a YOOtheme / UIkit modal or drop (the header search): focus the box when it opens, close the list when it closes

@@ -37,7 +37,7 @@ $sfx = htmlspecialchars((string) $params->get('moduleclass_sfx', ''), ENT_COMPAT
      style="--ssm-accent:<?php echo $e($accent); ?><?php echo $maxw > 0 ? ';--ssm-max:' . $maxw . 'px' : ';--ssm-max:none'; ?>"
      data-suggest="<?php echo $e($suggestUrl); ?>" data-n="<?php echo $count; ?>" data-live="<?php echo $live ? 1 : 0; ?>" data-popular="<?php echo $popular ? 1 : 0; ?>"
      data-t-popular="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_POPULAR')); ?>" data-t-all="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_ALL')); ?>"
-     data-t-none="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_NONE')); ?>" data-t-count="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_COUNT')); ?>">
+     data-t-searching="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_SEARCHING')); ?>" data-t-none="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_NONE')); ?>" data-t-count="<?php echo $e(Text::_('MOD_SMARTSEARCH_T_COUNT')); ?>">
   <form class="ssm-form" role="search" action="<?php echo $e($action); ?>" method="get" autocomplete="off">
     <?php foreach ($hidden as $k => $v) : if (is_string($v)) : ?><input type="hidden" name="<?php echo $e($k); ?>" value="<?php echo $e($v); ?>"><?php endif; endforeach; ?>
     <?php if ($itemId > 0 && !isset($hidden['Itemid'])) : ?><input type="hidden" name="Itemid" value="<?php echo (int) $itemId; ?>"><?php endif; ?>

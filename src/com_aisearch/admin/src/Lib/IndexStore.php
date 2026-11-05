@@ -37,7 +37,7 @@ final class IndexStore
                 fclose($fh);
                 $bm = @unserialize($raw, ['allowed_classes' => [Bm25::class]]);
                 if ($bm instanceof Bm25) {
-                    return $bm;
+                    return $this->compactAndRecache($bm, $updated);
                 }
             } else {
                 fclose($fh);
@@ -50,9 +50,24 @@ final class IndexStore
         if ($raw === false) {
             return null;
         }
-        @file_put_contents($file, $updated . "\n" . $raw, LOCK_EX);
         $bm = @unserialize($raw, ['allowed_classes' => [Bm25::class]]);
-        return $bm instanceof Bm25 ? $bm : null;
+        if (!$bm instanceof Bm25) {
+            return null;
+        }
+        return $this->compactAndRecache($bm, $updated, true);
+    }
+
+    /** An index saved by an older version is converted once, and the fast copy is rewritten so later searches load quickly. */
+    private function compactAndRecache(Bm25 $bm, string $updated, bool $force = false): Bm25
+    {
+        if (!$bm->isCompact()) {
+            $bm->compact();
+            $force = true;
+        }
+        if ($force) {
+            @file_put_contents($this->cacheFile(), $updated . "\n" . serialize($bm), LOCK_EX);
+        }
+        return $bm;
     }
 
     public function save(Bm25 $bm): void

@@ -64,6 +64,17 @@ $formStyle = $sw > 0 ? 'display:' . ($themeForm || $bsForm ? 'block' : 'flex') .
 .aisearch .ai-bs-card:hover{border-color:var(--ai-brand)}
 .aisearch .ai-bsform .btn-primary{background:var(--ai-brand);border-color:var(--ai-brand)}
 .aisearch .ai-bsform .form-control:focus{border-color:var(--ai-brand);box-shadow:none}
+.aisearch.ai-busy form.ai-form,.aisearch.ai-busy form.uk-search{opacity:.85}
+.aisearch.ai-busy .ai-input,.aisearch.ai-busy .uk-search-input{cursor:progress}
+.aisearch.ai-busy .ai-btn{opacity:.75;cursor:progress}
+.aisearch .ai-wait{display:none;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;color:var(--ai-muted);font-size:calc(var(--ai-b) * .9)}
+.aisearch.ai-busy .ai-wait{display:flex}
+.aisearch .ai-wait::before{content:"";width:1em;height:1em;border:2px solid var(--ai-brand);border-right-color:transparent;border-radius:50%;animation:ai-spin .8s linear infinite}
+@keyframes ai-spin{to{transform:rotate(360deg)}}
+#ssb-bar{position:fixed;left:0;right:0;top:0;height:3px;z-index:2147483000;background:rgba(59,143,224,.18);overflow:hidden;pointer-events:none}
+#ssb-bar i{position:absolute;top:0;bottom:0;width:40%;background:var(--ai-brand,#3b8fe0);border-radius:3px;animation:ssb-slide 1.1s ease-in-out infinite}
+@keyframes ssb-slide{0%{left:-40%}100%{left:100%}}
+@media (prefers-reduced-motion:reduce){.aisearch .ai-wait::before{animation:none}#ssb-bar i{animation:none;width:100%;opacity:.6}}
 </style>
 <?php if (!$this->yoo && !$this->bs) : ?>
 <style>
@@ -105,6 +116,7 @@ $formStyle = $sw > 0 ? 'display:' . ($themeForm || $bsForm ? 'block' : 'flex') .
       <button type="submit" class="ai-btn">ค้นหา</button>
     <?php endif; ?>
   </form>
+  <div class="ai-wait" role="status" aria-live="polite" hidden><span><?php echo $e('กำลังค้นหา…'); ?></span></div>
   <?php $sug = $this->suggestions(); if ($sug['items']) : ?>
   <?php if ($sug['label'] !== '') : ?><div class="ai-chips-label"><?php echo $e($sug['label']); ?></div><?php endif; ?>
   <div class="ai-chips">
@@ -136,3 +148,12 @@ $formStyle = $sw > 0 ? 'display:' . ($themeForm || $bsForm ? 'block' : 'flex') .
 (function(){document.querySelectorAll('.aisearch .ai-toggle a').forEach(function(a){a.addEventListener('click',function(){try{document.cookie='aisearch_view='+a.getAttribute('data-v')+'; path=/; max-age=31536000; SameSite=Lax';}catch(e){}});});})();
 </script>
 <?php endif; ?>
+<script>
+(function(){var r=document.querySelector('.aisearch');if(!r)return;var wait=r.querySelector('.ai-wait');
+function bar(){if(document.getElementById('ssb-bar'))return;var b=document.createElement('div');b.id='ssb-bar';b.setAttribute('role','progressbar');b.setAttribute('aria-label','กำลังค้นหา…');b.appendChild(document.createElement('i'));document.body.appendChild(b)}
+function busy(){r.classList.add('ai-busy');if(wait)wait.hidden=false;bar()}
+function reset(){r.classList.remove('ai-busy');if(wait)wait.hidden=true;var b=document.getElementById('ssb-bar');if(b)b.remove()}
+var f=r.querySelector('form');if(f)f.addEventListener('submit',function(){setTimeout(busy,0)});
+r.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.ai-chips a,.ai-pager a,.uk-pagination a,.page-link,.ai-toggle a,.ai-item');if(a&&a.href&&!e.defaultPrevented&&!e.ctrlKey&&!e.metaKey)setTimeout(busy,0)});
+window.addEventListener('pageshow',function(e){if(e.persisted)reset()});})();
+</script>

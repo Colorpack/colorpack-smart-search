@@ -5,7 +5,9 @@ namespace Colorpack\Plugin\System\SmartSearchBridge\Extension;
 
 use Colorpack\Component\AiSearch\Administrator\Lib\SearchService;
 use Colorpack\Component\AiSearch\Administrator\Lib\Settings;
+use Joomla\CMS\Document\HtmlDocument;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Router\Route;
 use Joomla\Database\DatabaseInterface;
@@ -18,9 +20,12 @@ use Joomla\Event\SubscriberInterface;
  */
 final class SmartSearchBridge extends CMSPlugin implements SubscriberInterface
 {
+    /** the site side needs the plugin's own texts ("Searching...") */
+    protected $autoloadLanguage = true;
+
     public static function getSubscribedEvents(): array
     {
-        return ['onAfterRoute' => 'afterRoute'];
+        return ['onAfterRoute' => 'afterRoute', 'onBeforeCompileHead' => 'beforeHead'];
     }
 
     public function afterRoute(Event $event): void
@@ -54,6 +59,40 @@ final class SmartSearchBridge extends CMSPlugin implements SubscriberInterface
             $code = (int) $this->params->get('redirect_code', 302) === 301 ? 301 : 302;
             $app->redirect($url, $code);
         }
+    }
+
+
+    /** Shows that a search is running: a bar at the top of the page and "Searching..." under the search box, from the moment the form is sent. */
+    public function beforeHead(Event $event): void
+    {
+        $app = $this->getApplication();
+        if (!$app || !$app->isClient('site') || (int) $this->params->get('progress', 1) !== 1) {
+            return;
+        }
+        $doc = $app->getDocument();
+        if (!$doc instanceof HtmlDocument) {
+            return;
+        }
+        $msg = json_encode(Text::_('PLG_SYSTEM_SMARTSEARCHBRIDGE_SEARCHING'), JSON_UNESCAPED_UNICODE);
+        $css = '#ssb-bar{position:fixed;left:0;right:0;top:0;height:3px;z-index:2147483000;background:rgba(59,143,224,.18);overflow:hidden;pointer-events:none}'
+            . '#ssb-bar i{position:absolute;top:0;bottom:0;width:40%;background:#3b8fe0;border-radius:3px;animation:ssb-slide 1.1s ease-in-out infinite}'
+            . '@keyframes ssb-slide{0%{left:-40%}100%{left:100%}}'
+            . '.ssb-status{margin-top:10px;font-size:.9em;line-height:1.4;color:#555;text-align:center}'
+            . '.ssb-status::before{content:"";display:inline-block;width:.9em;height:.9em;margin-right:.5em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-.12em;animation:ssb-spin .8s linear infinite}'
+            . '@keyframes ssb-spin{to{transform:rotate(360deg)}}'
+            . '.ssb-form-busy{opacity:.8}.ssb-form-busy input{cursor:progress}'
+            . '@media (prefers-reduced-motion:reduce){#ssb-bar i{animation:none;width:100%;opacity:.6}.ssb-status::before{animation:none}}';
+        $js = '(function(){var MSG=' . $msg . ',SEL=\'form.js-finder-searchform,form[action*="finder"],form[action*="aisearch"],form[role="search"]\';'
+            . 'function bar(){if(document.getElementById("ssb-bar"))return;var b=document.createElement("div");b.id="ssb-bar";b.setAttribute("role","progressbar");b.setAttribute("aria-label",MSG);b.appendChild(document.createElement("i"));document.body.appendChild(b)}'
+            . 'function busy(f){bar();document.documentElement.classList.add("ssb-busy");f.classList.add("ssb-form-busy");f.setAttribute("aria-busy","true");'
+            . 'var n=f.nextElementSibling;if(!n||!n.classList.contains("ssb-status")){var s=document.createElement("div");s.className="ssb-status";s.setAttribute("role","status");s.textContent=MSG;f.parentNode.insertBefore(s,f.nextSibling)}}'
+            . 'function reset(){var b=document.getElementById("ssb-bar");if(b)b.remove();document.documentElement.classList.remove("ssb-busy");'
+            . 'document.querySelectorAll(".ssb-status").forEach(function(x){x.remove()});document.querySelectorAll(".ssb-form-busy").forEach(function(f){f.classList.remove("ssb-form-busy");f.removeAttribute("aria-busy")})}'
+            . 'document.addEventListener("submit",function(ev){var f=ev.target;if(!f||!f.matches||!f.matches(SEL)||(f.closest&&f.closest("[data-ssm],.aisearch")))return;setTimeout(function(){if(!ev.defaultPrevented)busy(f)},0)},false);'
+            . 'window.addEventListener("pageshow",function(e){if(e.persisted)reset()});})();';
+        $wa = $doc->getWebAssetManager();
+        $wa->addInlineStyle($css);
+        $wa->addInlineScript($js);
     }
 
     private function target(string $q): string

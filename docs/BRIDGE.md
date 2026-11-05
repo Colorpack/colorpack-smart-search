@@ -9,6 +9,7 @@
 - ผู้เข้าชมพิมพ์ในช่องค้นหาเดิม แล้วระบบพาไปหน้าผลลัพธ์ของเราพร้อมคำค้น
 - ลิงก์เก่า `/component/finder/search?q=...` ก็ไปหน้าใหม่ด้วย
 - ถ้าช่องเดิมมีคำแนะนำขณะพิมพ์ของ Smart Search ปลั๊กอินตอบด้วยชื่อบทความของเรา (ใช้เฉพาะดัชนีคำค้น ไม่เรียกบริการภายนอก)
+- แสดงว่า **กำลังค้นหาอยู่** (แถบด้านบนและข้อความ "กำลังค้นหา…" ใต้ช่อง) ตั้งแต่ส่งฟอร์มค้นหาของเว็บ ปิดได้ที่ตัวเลือก *แสดงว่ากำลังค้นหาอยู่*
 - ไม่แตะการโพสต์ฟอร์ม, OpenSearch, ฟีด และหน้าผู้ดูแล
 
 ## เปิดใช้
@@ -36,6 +37,7 @@ The **System - Colorpack Smart Search bridge** plugin sends searches made throug
 - A visitor types in the existing search box and lands on our results page with the search term.
 - Old links such as `/component/finder/search?q=...` go to the new page too.
 - If the existing box has Smart Search's search-as-you-type, the plugin answers with our article titles (keyword index only, no external service).
+- It shows that **a search is running** (a bar at the top and "Searching…" under the box) from the moment the site's search form is sent. Switch it off with the option *Show that a search is running*.
 - It leaves form posts, OpenSearch, feeds and the administrator alone.
 
 ### Turn it on

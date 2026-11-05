@@ -1,5 +1,12 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.9.1
+
+- **EN** Searches now show that they are working: a bar at the top of the page and "Searching…" under the search box from the moment a search form is sent (the search results page, the search box module, and, through the bridge plugin, the YOOtheme header search and any other search form). Switch it off in the bridge plugin if you do not want it.
+- **EN** Faster: the keyword index is stored in a compact form, so every search loads it in a few milliseconds instead of about 400 ms, and uses about a fifth of the memory (10 MB instead of 53 MB). Results are identical. An existing index is converted automatically on its first use.
+- **ไทย** การค้นหาแสดงสถานะว่ากำลังทำงาน: มีแถบด้านบนของหน้าและข้อความ "กำลังค้นหา…" ใต้ช่องค้นหา ตั้งแต่ส่งฟอร์ม (หน้าผลลัพธ์ โมดูลช่องค้นหา และผ่านปลั๊กอิน bridge ยังครอบคลุมช่องค้นหาส่วนหัวของ YOOtheme และฟอร์มค้นหาอื่น ๆ) ปิดได้ในปลั๊กอิน bridge
+- **ไทย** เร็วขึ้น: เก็บดัชนีคำค้นในรูปแบบกะทัดรัด การโหลดดัชนีต่อการค้นเหลือไม่กี่มิลลิวินาที จากเดิมราว 400 มิลลิวินาที และใช้หน่วยความจำประมาณหนึ่งในห้า (10 MB จากเดิม 53 MB) ผลลัพธ์เหมือนเดิมทุกประการ ดัชนีเดิมจะถูกแปลงอัตโนมัติเมื่อใช้ครั้งแรก
+
 ## 0.9.0
 
 - **EN** New system plugin "Colorpack Smart Search bridge" (installed off): sends Joomla Smart Search (`com_finder`) searches, including the YOOtheme header search and old search links, to the Colorpack Smart Search page, and answers search-as-you-type with our titles. See docs/BRIDGE.md.
