@@ -29,6 +29,7 @@ class HtmlView extends BaseHtmlView
     public string $layoutName = 'list';
     public bool $canToggle = false;
     /** administrators only: ?explain=1 shows why each result is where it is */
+    public int $logId = 0;
     public array $explain = [];
     public array $ranks = ['bm25' => [], 'ai' => []];
     public int $hidden = 0;
@@ -103,7 +104,7 @@ class HtmlView extends BaseHtmlView
             $this->indexed = $r['indexed'];
             $this->mode = $r['mode'];
             if ($r['indexed'] && $this->start === 0) {
-                $svc->log($this->q, $this->total, $r['ms'], $r['mode']);
+                $this->logId = $svc->log($this->q, $this->total, $r['ms'], $r['mode']);
             }
         }
         $font = $this->fontInfo();

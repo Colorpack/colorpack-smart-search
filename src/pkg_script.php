@@ -30,5 +30,8 @@ class Pkg_AisearchInstallerScript
         if ($cols && !isset($cols['mode'])) {
             $db->setQuery("ALTER TABLE `#__aisearch_log` ADD COLUMN `mode` varchar(10) NOT NULL DEFAULT 'keyword'")->execute();
         }
+        if ($cols && !isset($cols['tracked'])) {
+            $db->setQuery("ALTER TABLE `#__aisearch_log` ADD COLUMN `tracked` tinyint NOT NULL DEFAULT 0, ADD COLUMN `clicked` tinyint NOT NULL DEFAULT 0, ADD COLUMN `click_pos` smallint unsigned NOT NULL DEFAULT 0")->execute();
+        }
     }
 }

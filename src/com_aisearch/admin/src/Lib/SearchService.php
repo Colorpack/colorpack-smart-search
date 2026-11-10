@@ -161,9 +161,22 @@ final class SearchService
         return $res;
     }
 
-    public function log(string $q, int $results, float $ms, string $mode = 'keyword'): void
+    /** Writes one line to the search log and returns its id (the results page sends it back with a click). Old lines are dropped after the keep-days setting. */
+    public function log(string $q, int $results, float $ms, string $mode = 'keyword'): int
     {
-        $row = (object) ['q' => mb_substr($q, 0, 200), 'results' => $results, 'ms' => $ms, 'mode' => $mode, 'created' => gmdate('Y-m-d H:i:s')];
-        $this->db->insertObject('#__aisearch_log', $row);
+        $row = (object) ['q' => mb_substr($q, 0, 200), 'results' => $results, 'ms' => $ms, 'mode' => $mode, 'tracked' => 1, 'created' => gmdate('Y-m-d H:i:s')];
+        try {
+            $this->db->insertObject('#__aisearch_log', $row);
+        } catch (\Throwable $e) {   // an upgrade that has not added the new columns yet
+            unset($row->tracked);
+            $this->db->insertObject('#__aisearch_log', $row);
+            return 0;
+        }
+        $id = (int) $this->db->insertid();
+        if (random_int(1, 100) === 1) {
+            $db = $this->db;
+            $db->setQuery('DELETE FROM ' . $db->quoteName('#__aisearch_log') . ' WHERE created < ' . $db->quote(gmdate('Y-m-d H:i:s', time() - $this->settings->logDays() * 86400)))->execute();
+        }
+        return $id;
     }
 }

@@ -53,6 +53,16 @@ class SuggestController extends BaseController
         $q = trim((string) $in->post->getString('q', ''));
         $id = (int) $in->post->getInt('id', 0);
         $settings = Settings::load();
+        $lid = (int) $in->post->getInt('lid', 0);
+        $pos = max(1, min(1000, (int) $in->post->getInt('pos', 1)));
+        if ($lid > 0 && $q !== '' && $id > 0) {   // tells the dashboard that this search led to a click, and where
+            try {
+                $db0 = Factory::getContainer()->get(DatabaseInterface::class);
+                $db0->setQuery('UPDATE ' . $db0->quoteName('#__aisearch_log') . ' SET clicked = 1, click_pos = IF(click_pos = 0, ' . $pos . ', click_pos)'
+                    . ' WHERE id = ' . $lid . ' AND tracked = 1 AND q = ' . $db0->quote(mb_substr($q, 0, 200)))->execute();
+            } catch (\Throwable $e) {
+            }
+        }
         if ($settings->clickLearning() && $q !== '' && $id > 0 && mb_strlen($q) <= 200) {
             $session = $app->getSession();
             $seen = (array) $session->get('com_aisearch.clicks', []);

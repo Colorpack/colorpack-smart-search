@@ -3,6 +3,7 @@ namespace Colorpack\Component\AiSearch\Administrator\View\Dashboard;
 
 \defined('_JEXEC') or die;
 
+use Colorpack\Component\AiSearch\Administrator\Lib\DashStats;
 use Colorpack\Component\AiSearch\Administrator\Lib\IndexStore;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
@@ -12,6 +13,9 @@ use Joomla\Database\DatabaseInterface;
 
 class HtmlView extends BaseHtmlView
 {
+    public int $days = 30;
+    /** @var array<string,mixed> */
+    public array $stats = [];
     public int $docs = 0;
     public ?string $updated = null;
     public int $searches30 = 0;
@@ -30,6 +34,9 @@ class HtmlView extends BaseHtmlView
         }
         $this->intl = class_exists('IntlBreakIterator');
         $db = Factory::getContainer()->get(DatabaseInterface::class);
+        $d = (int) Factory::getApplication()->getInput()->getInt('days', 30);
+        $this->days = in_array($d, [7, 30, 90], true) ? $d : 30;
+        $this->stats = (new DashStats($db))->collect($this->days);
         $since = $db->quote(gmdate('Y-m-d H:i:s', time() - 30 * 86400));
         $this->docs = (int) $db->setQuery('SELECT COUNT(*) FROM ' . $db->quoteName('#__aisearch_docs'))->loadResult();
         $this->updated = (new IndexStore($db))->updated();

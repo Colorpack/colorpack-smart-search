@@ -41,6 +41,7 @@ final class Settings
     public function precisionCommonPct(): int { return max(10, min(90, (int) $this->p->get('precision_common_pct', 40))); }
     /** keep this many of the AI's most similar articles even when they do not contain the words (0 = none) */
     public function precisionKeepSemantic(): int { return max(0, min(10, (int) $this->p->get('precision_keep_semantic', 0))); }
+    public function logDays(): int { return max(30, min(730, (int) $this->p->get('log_days', 180))); }
     public function clickLearning(): bool { return (int) $this->p->get('click_learning', 1) === 1; }
     public function clickMin(): int { return max(1, min(50, (int) $this->p->get('click_min', 3))); }
     public function maxResults(): int { return max(20, min(300, (int) $this->p->get('max_results', 100))); }
