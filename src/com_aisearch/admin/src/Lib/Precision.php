@@ -46,6 +46,12 @@ final class Precision
     public function apply(array $tokens, array $ids, array $semantic = []): array
     {
         $plan = $this->plan($tokens);
+        // a long, chatty question ("อยากมีนมเยอะ ๆ ต้องกินอะไร") states an intent, not words to find: matching its words
+        // would hide the good articles and keep lucky ones, so leave the normal ranking alone
+        $filler = array_intersect($tokens, array_merge(self::FILLER, ['ๆ']));
+        if ($this->wordCount($tokens) >= 5 || ($filler && $this->wordCount($tokens) >= 4)) {
+            return ['ids' => $ids, 'info' => [], 'hidden' => 0, 'plan' => $plan, 'skipped' => true];
+        }
         if (!$ids || (!$plan['phrases'] && !$plan['core'])) {
             return ['ids' => $ids, 'info' => [], 'hidden' => 0, 'plan' => $plan];
         }
@@ -78,6 +84,21 @@ final class Precision
         return ['ids' => $out, 'info' => $info, 'hidden' => $hidden, 'plan' => $plan];
     }
 
+    /** Words in the question as typed, a number with its unit counting as one, the repeat mark ๆ not at all. */
+    private function wordCount(array $tokens): int
+    {
+        $n = 0;
+        for ($i = 0, $c = count($tokens); $i < $c; $i++) {
+            if ($tokens[$i] === 'ๆ') { continue; }
+            if (ctype_digit($tokens[$i]) && isset($tokens[$i + 1]) && in_array(mb_strtolower($tokens[$i + 1]), self::UNITS, true)) { $i++; }
+            $n++;
+        }
+        return $n;
+    }
+
+    /** Wording that says nothing about the topic of a question. */
+    private const FILLER = ['อยาก', 'มี', 'เยอะ', 'มาก', 'หน่อย', 'ได้', 'ที่', 'คือ', 'เป็น', 'แบบ', 'ทำ', 'วิธี', 'อยู่', 'จะ', 'ถึง'];
+
     /** Splits the query into number+unit phrases, topic words ("core") and very common words ("context"). */
     private function plan(array $tokens): array
     {
@@ -104,6 +125,7 @@ final class Precision
             $core = $ctx;   // every word is common: use them all rather than nothing
             $ctx = [];
         }
+        $core = array_values(array_filter($core, static fn ($w) => !in_array($w, self::FILLER, true) && $w !== 'ๆ'));
         return ['phrases' => $phrases, 'core' => $core, 'context' => $ctx];
     }
 
