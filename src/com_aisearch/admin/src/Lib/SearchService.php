@@ -121,6 +121,7 @@ final class SearchService
         }
         $mode = 'keyword';
         $vec = [];
+        $rewrite = '';
         $fused = $this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights)));
         $info = [];
         $hidden = 0;
@@ -145,7 +146,7 @@ final class SearchService
                 }
             }
         }
-        $res = ['items' => $items, 'total' => $total, 'ms' => round((microtime(true) - $t0) * 1000, 1), 'indexed' => true, 'mode' => $mode, 'hidden' => $hidden];
+        $res = ['items' => $items, 'total' => $total, 'ms' => round((microtime(true) - $t0) * 1000, 1), 'indexed' => true, 'mode' => $mode, 'hidden' => $hidden, 'rewrite' => $rewrite];
         if ($explain) {
             $res['explain'] = $info;
             $res['ranks'] = ['bm25' => array_flip(array_keys($rankings[0])), 'ai' => array_flip(array_keys($vec))];

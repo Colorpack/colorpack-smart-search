@@ -20,6 +20,7 @@ $e = static fn ($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
     $cur = $r['current']; $pre = $r['precision']; ?>
 <div class="card mb-3"><div class="card-body">
   <h3 class="h6 mb-3"><?php echo $e($r['q']); ?></h3>
+  <?php /* AI-START */ ?><?php if (!empty($cur['rewrite'])) : ?><p class="small mb-2"><strong>AI เข้าใจว่า / AI read it as:</strong> <?php echo $e($cur['rewrite']); ?></p><?php endif; ?><?php /* AI-END */ ?>
   <div class="row">
     <div class="col-md-6">
       <p class="small text-muted mb-2"><strong>แบบปัจจุบัน / Current</strong> · พบ <?php echo (int) $cur['total']; ?> เรื่อง · 12 อันดับแรก</p>
