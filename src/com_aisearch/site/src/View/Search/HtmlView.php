@@ -28,6 +28,10 @@ class HtmlView extends BaseHtmlView
     public bool $bs = false;
     public string $layoutName = 'list';
     public bool $canToggle = false;
+    /** administrators only: ?explain=1 shows why each result is where it is */
+    public array $explain = [];
+    public array $ranks = ['bm25' => [], 'ai' => []];
+    public int $hidden = 0;
     public string $viewParam = '';
 
     /** A custom layout (e.g. "mylayout.php") may reuse the standard parts (default_list.php, default_card.php, default_pagination.php) without copying them. */
@@ -84,11 +88,15 @@ class HtmlView extends BaseHtmlView
         $this->bs = !$this->yoo && ($mode === 'bootstrap' || ($mode === 'auto' && str_contains($names, 'cassiopeia')));
         if (mb_strlen($this->q) >= 2) {
             $svc = new SearchService(Factory::getContainer()->get(DatabaseInterface::class), $s);
-            $r = $svc->search(mb_substr($this->q, 0, 200), $this->perPage, $this->start, $s->maxResults());
+            $wantExplain = $app->getInput()->getInt('explain', 0) === 1 && $app->getIdentity() && $app->getIdentity()->authorise('core.manage', 'com_aisearch');
+            $r = $svc->search(mb_substr($this->q, 0, 200), $this->perPage, $this->start, $s->maxResults(), true, null, $wantExplain);
             if ($this->start >= $r['total'] && $r['total'] > 0) {   // page past the end -> last page
                 $this->start = (int) (floor(($r['total'] - 1) / $this->perPage) * $this->perPage);
-                $r = $svc->search(mb_substr($this->q, 0, 200), $this->perPage, $this->start, $s->maxResults());
+                $r = $svc->search(mb_substr($this->q, 0, 200), $this->perPage, $this->start, $s->maxResults(), true, null, $wantExplain);
             }
+            $this->explain = $r['explain'] ?? [];
+            $this->ranks = $r['ranks'] ?? $this->ranks;
+            $this->hidden = (int) ($r['hidden'] ?? 0);
             $this->items = $r['items'];
             $this->total = $r['total'];
             $this->ms = $r['ms'];
@@ -201,6 +209,23 @@ class HtmlView extends BaseHtmlView
     public function suggestions(): array
     {
         return \Colorpack\Component\AiSearch\Administrator\Lib\Popular::forSettings(Factory::getContainer()->get(DatabaseInterface::class), $this->settings);
+    }
+
+    /** Administrators with ?explain=1: one line saying where this result stands and why. */
+    public function explainHtml(object $d): string
+    {
+        if (!$this->explain && !$this->ranks['bm25'] && !$this->ranks['ai']) {
+            return '';
+        }
+        $id = (int) $d->id;
+        $e = $this->explain[$id] ?? null;
+        $parts = [];
+        if ($e) {
+            $parts[] = 'tier ' . $e['tier'] . ': ' . $e['why'] . (!empty($e['context']) ? ' + context' : '');
+        }
+        $parts[] = 'keyword rank ' . (isset($this->ranks['bm25'][$id]) ? $this->ranks['bm25'][$id] + 1 : '-');
+        $parts[] = 'AI rank ' . (isset($this->ranks['ai'][$id]) ? $this->ranks['ai'][$id] + 1 : '-');
+        return '<div class="ai-explain" style="margin-top:6px;padding:4px 8px;border-radius:6px;background:#fff8e1;color:#6b4e00;font:12px/1.4 ui-monospace,Menlo,monospace">' . htmlspecialchars(implode('  |  ', $parts), ENT_QUOTES, 'UTF-8') . '</div>';
     }
 
     /** Link for the List / Cards switch (resets to page 1). */

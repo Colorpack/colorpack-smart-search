@@ -25,6 +25,7 @@ final class Indexer
         @set_time_limit(280);
         $bm = new Bm25();
         $this->db->setQuery('DELETE FROM ' . $this->db->quoteName('#__aisearch_docs'))->execute();
+        $this->deleteText(null);
         $tags = $this->tagsFor(null);
         $fc = $this->fcImages(null);
         $n = 0; $offset = 0; $step = 200;
@@ -48,6 +49,7 @@ final class Indexer
         $bm = $this->store->load() ?? new Bm25();
         $bm->remove($id);
         $this->db->setQuery('DELETE FROM ' . $this->db->quoteName('#__aisearch_docs') . ' WHERE id = ' . (int) $id)->execute();
+        $this->deleteText($id);
         $rows = $this->db->setQuery($this->articleQuery($id))->loadObjectList();
         if ($rows) {
             $this->addRow($bm, $rows[0], $this->tagsFor($id)[$id] ?? [], $this->fcImages($id));
@@ -63,6 +65,7 @@ final class Indexer
             $this->store->save($bm);
         }
         $this->db->setQuery('DELETE FROM ' . $this->db->quoteName('#__aisearch_docs') . ' WHERE id = ' . (int) $id)->execute();
+        $this->deleteText($id);
     }
 
     /** @return array<int,string> article id => FlexiContent image file name (only when the option is on and the table exists) */
@@ -208,5 +211,24 @@ final class Indexer
             'publish_up' => self::dateOrNull($r->publish_up ?? null), 'publish_down' => self::dateOrNull($r->publish_down ?? null), 'access' => max(1, (int) ($r->access ?? 1)),
         ];
         $this->db->insertObject('#__aisearch_docs', $row);
+        $this->saveText((int) $r->id, $body);
+    }
+
+    /** Normalised article text (first 6,000 characters) for the precision mode. Never allowed to break indexing. */
+    private function saveText(int $id, string $body): void
+    {
+        try {
+            $row = (object) ['id' => $id, 'body' => $this->tk->normalize(mb_substr($body, 0, 6000))];   // insertObject needs a variable
+            $this->db->insertObject('#__aisearch_text', $row);
+        } catch (\Throwable $e) {
+        }
+    }
+
+    private function deleteText(?int $id): void
+    {
+        try {
+            $this->db->setQuery('DELETE FROM ' . $this->db->quoteName('#__aisearch_text') . ($id === null ? '' : ' WHERE id = ' . (int) $id))->execute();
+        } catch (\Throwable $e) {
+        }
     }
 }

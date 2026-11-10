@@ -94,7 +94,7 @@ final class SearchService
     }
 
     /** @return array{items:array,total:int,ms:float,indexed:bool,mode:string} mode = hybrid | keyword */
-    public function search(string $q, int $limit = 20, int $offset = 0, int $max = 100, bool $semantic = true): array
+    public function search(string $q, int $limit = 20, int $offset = 0, int $max = 100, bool $semantic = true, ?bool $precision = null, bool $explain = false): array
     {
         $t0 = microtime(true);
         $bm = (new IndexStore($this->db))->load();
@@ -110,14 +110,28 @@ final class SearchService
                 array_push($expanded, ...$alts);
             }
         }
-        $rankings = [$bm->search($tokens, 100)];
+        // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
+        $usePrecision = $precision ?? $this->settings->precisionMode();
+        $depth = $usePrecision ? 800 : 100;
+        $rankings = [$bm->search($tokens, $depth)];
         $weights = [1.0];
         if ($expanded) {
-            $rankings[] = $bm->search($tk->tokenize(implode(' ', $expanded)), 100);
+            $rankings[] = $bm->search($tk->tokenize(implode(' ', $expanded)), $depth);
             $weights[] = 0.5;
         }
         $mode = 'keyword';
-        $all = array_slice($this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights))), 0, $max);
+        $vec = [];
+        $fused = $this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights)));
+        $info = [];
+        $hidden = 0;
+        if ($usePrecision) {
+            $pr = (new Precision($this->db, $tk, $bm, $this->synonyms(), $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
+                ->apply($tokens, $fused, array_keys($vec));
+            $fused = $pr['ids'];
+            $info = $pr['info'];
+            $hidden = $pr['hidden'];
+        }
+        $all = array_slice($fused, 0, $max);
         $total = count($all);
         $ids = array_slice($all, max(0, $offset), $limit);
         $items = [];
@@ -131,7 +145,12 @@ final class SearchService
                 }
             }
         }
-        return ['items' => $items, 'total' => $total, 'ms' => round((microtime(true) - $t0) * 1000, 1), 'indexed' => true, 'mode' => $mode];
+        $res = ['items' => $items, 'total' => $total, 'ms' => round((microtime(true) - $t0) * 1000, 1), 'indexed' => true, 'mode' => $mode, 'hidden' => $hidden];
+        if ($explain) {
+            $res['explain'] = $info;
+            $res['ranks'] = ['bm25' => array_flip(array_keys($rankings[0])), 'ai' => array_flip(array_keys($vec))];
+        }
+        return $res;
     }
 
     public function log(string $q, int $results, float $ms, string $mode = 'keyword'): void

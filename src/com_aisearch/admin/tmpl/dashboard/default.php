@@ -29,6 +29,7 @@ $token = Session::getFormToken();
     <p class="display-6 mb-1"><?php echo number_format($this->docs); ?></p>
     <p class="text-muted small mb-3">articles indexed<?php echo $this->updated ? ' · updated ' . HTMLHelper::_('date', $this->updated, 'Y-m-d H:i') : ' · <strong>not built yet</strong>'; ?></p>
     <button id="ai-start" class="btn btn-primary" type="button"><?php echo $this->updated ? 'Rebuild / update index' : 'Build index'; ?></button>
+    <a class="btn btn-outline-secondary btn-sm ms-1" href="index.php?option=com_aisearch&amp;view=compare">เปรียบเทียบโหมดการค้น / Compare search modes</a>
     <noscript><p class="text-danger small mt-2">JavaScript is required for building the index.</p></noscript>
     <?php if ($this->docs) : ?><p class="text-muted small mt-3 mb-0">Pictures found: <?php echo number_format($this->imgStats['article']); ?> from the article · <?php echo number_format($this->imgStats['fc']); ?> from FlexiContent · <strong<?php echo $this->imgStats['none'] > $this->docs / 2 ? ' class="text-danger"' : ''; ?>><?php echo number_format($this->imgStats['none']); ?> without a picture</strong> (placeholder shown). Change the source in Options &gt; Appearance, then rebuild.</p><?php endif; ?>
   </div></div></div>

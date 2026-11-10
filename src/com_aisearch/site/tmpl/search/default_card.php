@@ -30,6 +30,7 @@ $showDate = $this->settings->showDate($this->layoutName);
         <div class="uk-card-body uk-margin-remove-first-child ai-yoo-body">
           <h4 class="el-title uk-card-title uk-margin-top uk-margin-remove-bottom"><?php echo $e($d->title); ?></h4>
           <div class="el-content uk-panel uk-margin-top uk-margin-remove-bottom"><?php echo $e($this->excerpt($d)); ?></div>
+          <?php echo $this->explainHtml($d); ?>
           <?php $fi = $this->footerItems($d); if ($fi) : ?><div class="ai-meta-wrap"><?php foreach ($fi as $x) : ?><span class="el-meta uk-text-small uk-text-primary"><?php echo $e($x); ?></span><?php endforeach; ?></div><?php endif; ?>
         </div>
       </a>
@@ -46,6 +47,7 @@ $showDate = $this->settings->showDate($this->layoutName);
       <div class="card-body d-flex flex-column">
         <h4 class="card-title h6 ai-title"><?php echo $e($d->title); ?></h4>
         <p class="card-text small text-body-secondary ai-text"><?php echo $e($this->excerpt($d)); ?></p>
+        <?php echo $this->explainHtml($d); ?>
         <?php $fi = $this->footerItems($d); if ($fi) : ?><div class="ai-meta-wrap"><?php foreach ($fi as $x) : ?><span class="badge rounded-pill ai-meta"><?php echo $e($x); ?></span><?php endforeach; ?></div><?php endif; ?>
       </div>
     </a>
@@ -60,6 +62,7 @@ $showDate = $this->settings->showDate($this->layoutName);
     <div class="ai-body">
       <h4 class="ai-title"><?php echo $e($d->title); ?></h4>
       <p class="ai-text"><?php echo $e($this->excerpt($d)); ?></p>
+      <?php echo $this->explainHtml($d); ?>
       <?php $fi = $this->footerItems($d); if ($fi) : ?><div class="ai-meta-wrap"><?php foreach ($fi as $x) : ?><span class="ai-meta"><?php echo $e($x); ?></span><?php endforeach; ?></div><?php endif; ?>
     </div>
   </a>

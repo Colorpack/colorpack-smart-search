@@ -64,6 +64,22 @@ final class Bm25
         $this->avg = $this->len ? array_sum($this->len) / count($this->len) : 0.0;
     }
 
+    /** Number of articles in the index. */
+    public function docCount(): int
+    {
+        return count($this->len);
+    }
+
+    /** In how many articles a word appears (used to tell very common words from the words that carry the topic). */
+    public function docFreq(string $term): int
+    {
+        $p = $this->postings[$term] ?? null;
+        if ($p === null || $p === '' || $p === []) {
+            return 0;
+        }
+        return is_array($p) ? count($p) : intdiv(strlen($p), 8);
+    }
+
     /** True when every term is already in the packed format. */
     public function isCompact(): bool
     {

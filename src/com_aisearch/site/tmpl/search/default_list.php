@@ -19,6 +19,7 @@ $showImg = $this->settings->listShowImage();
       <?php if ($meta !== '') : ?><div class="ai-cat"><?php echo $e($meta); ?></div><?php endif; ?>
       <span class="ai-t"><?php echo $e($d->title); ?></span>
       <div class="ai-snip"><?php echo $e($this->excerpt($d)); ?></div>
+      <?php echo $this->explainHtml($d); ?>
       <?php if ($tags) : ?><div class="ai-tags"><?php foreach ($tags as $t) : ?><span class="ai-tag"><?php echo $e($t); ?></span><?php endforeach; ?></div><?php endif; ?>
     </span>
   </a>

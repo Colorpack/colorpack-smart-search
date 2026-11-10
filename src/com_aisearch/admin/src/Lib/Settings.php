@@ -33,6 +33,14 @@ final class Settings
         $v = trim((string) $this->p->get('synonyms', ''));
         return $v !== '' ? $v : self::DEFAULT_SYNONYMS;
     }
+    /** Precision mode: only show the articles that answer the search directly (see Precision). Off unless switched on. */
+    public function precisionMode(): bool { return (int) $this->p->get('precision_mode', 0) === 1; }
+    /** 2 = only title/tags/category matches, 3 = also articles that discuss the topic in the text (default), 4 = also weak matches */
+    public function precisionMaxTier(): int { return max(1, min(4, (int) $this->p->get('precision_max_tier', 3))); }
+    /** a word that appears in at least this share of all articles is only context, not the topic */
+    public function precisionCommonPct(): int { return max(10, min(90, (int) $this->p->get('precision_common_pct', 40))); }
+    /** keep this many of the AI's most similar articles even when they do not contain the words (0 = none) */
+    public function precisionKeepSemantic(): int { return max(0, min(10, (int) $this->p->get('precision_keep_semantic', 0))); }
     public function maxResults(): int { return max(20, min(300, (int) $this->p->get('max_results', 100))); }
     /** Search box width in px, centred on the page; 0 = full width. */
     public function searchWidth(): int { return max(0, min(1400, (int) $this->p->get('search_width', 760))); }

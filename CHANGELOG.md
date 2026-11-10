@@ -1,5 +1,12 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.10.0
+
+- **EN** New, optional **Precision mode** (off by default). Instead of listing every article that contains one of the words, it checks each candidate and keeps only articles that are really about the search: the phrase or all the key words are in the title (best), in the tags or category, or discussed in the text (not just mentioned once). Quantities with units are treated as a unit, so "เด็ก 1 เดือน" no longer returns "6 เดือน" articles. Results are ordered by this match level first, then by the usual ranking. Articles that only mention the words are hidden (Options > Search: how strict, and how common a word must be to count as context). Turn it on in Options > Search. After upgrading, press **Rebuild / update index** once so the text needed for the check is stored.
+- **EN** New admin page **Compare search modes** (button on the dashboard): type up to 30 searches and see the current results beside the Precision results, with the match level of each article. Try it before switching the mode on. Administrators can also add `?explain=1` to a results page to see why each article is listed.
+- **ไทย** เพิ่ม **โหมดความแม่นยำ (Precision mode)** แบบเลือกเปิดเอง (ปิดไว้เป็นค่าเริ่มต้น) แทนที่จะแสดงทุกบทความที่มีคำใดคำหนึ่ง ระบบจะตรวจแต่ละบทความและเก็บเฉพาะที่เกี่ยวกับคำค้นจริง คือมีวลีหรือคำสำคัญครบในชื่อเรื่อง (ดีที่สุด) ในแท็กหรือหมวด หรือกล่าวถึงเป็นเรื่องเป็นราวในเนื้อหา (ไม่ใช่แค่เอ่ยถึงครั้งเดียว) ตัวเลขกับหน่วยถูกมองเป็นหน่วยเดียว เช่น "เด็ก 1 เดือน" จะไม่ได้บทความ "6 เดือน" ผลลัพธ์เรียงตามระดับความตรงก่อน แล้วจึงเรียงตามคะแนนปกติ บทความที่แค่เอ่ยถึงคำจะถูกซ่อน (ตั้งความเข้มงวดและเกณฑ์คำทั่วไปได้ที่ ตัวเลือก > Search) เปิดได้ที่ ตัวเลือก > Search หลังอัปเกรดให้กด **Rebuild / update index** หนึ่งครั้งเพื่อเก็บข้อความที่ใช้ตรวจ
+- **ไทย** เพิ่มหน้าผู้ดูแล **เปรียบเทียบโหมดการค้น** (ปุ่มในแดชบอร์ด) พิมพ์คำค้นได้สูงสุด 30 คำ แล้วดูผลปัจจุบันเทียบกับผลโหมดความแม่นยำ พร้อมระดับความตรงของแต่ละบทความ ควรลองก่อนเปิดใช้ ผู้ดูแลระบบเติม `?explain=1` ท้าย URL หน้าผลลัพธ์เพื่อดูเหตุผลที่แต่ละบทความถูกแสดงได้
+
 ## 0.9.4
 
 - **EN** Fixed: the pagination buttons (Next, Previous, page numbers) on the search results page did nothing, because the page number in the link was never read. Page 2, 3 and so on now show the right results, in the List and Cards views and with Bootstrap, UIkit (YOOtheme) and plain markup. A link past the last page shows the last page.
