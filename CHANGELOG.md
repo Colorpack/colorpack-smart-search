@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.11.1
+
+- **EN** The article's **Meta Keywords** are now used by the search. They count as much as tags (more than the body text) and the precision mode treats a match in them like a match in the tags. Press **Rebuild / update index** once after upgrading; articles saved afterwards are updated automatically. The upgrade adds one column to the text table.
+- **ไทย** ระบบค้นหาใช้ **Meta Keywords** ของบทความแล้ว นับน้ำหนักเท่าแท็ก (มากกว่าเนื้อหา) และโหมดความแม่นยำนับว่าเจอในคีย์เวิร์ดเหมือนเจอในแท็ก หลังอัปเกรดให้กด **Rebuild / update index** หนึ่งครั้ง บทความที่บันทึกหลังจากนั้นจะอัปเดตอัตโนมัติ การอัปเกรดเพิ่ม 1 คอลัมน์ในตารางข้อความ
+
 ## 0.11.0
 
 - **EN** New **Learn from clicks** (Options > Search, on by default). When several visitors who searched for the same words open the same article, that article is moved up for that search. A count needs 3 clicks by default (changeable), and each visitor session counts a given search and article once. Only the search text, the article number and a count are stored, with no visitor information. The upgrade adds one small table.

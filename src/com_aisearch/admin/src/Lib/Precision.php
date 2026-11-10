@@ -134,7 +134,7 @@ final class Precision
     {
         $db = $this->db; $out = [];
         try {
-            $rows = $db->setQuery('SELECT d.id, d.title, d.category, d.tags, t.body FROM ' . $db->quoteName('#__aisearch_docs', 'd')
+            $rows = $db->setQuery('SELECT d.id, d.title, d.category, d.tags, t.body, t.kw FROM ' . $db->quoteName('#__aisearch_docs', 'd')
                 . ' LEFT JOIN ' . $db->quoteName('#__aisearch_text', 't') . ' ON t.id = d.id WHERE d.id IN (' . implode(',', array_map('intval', $ids)) . ')')->loadObjectList();
         } catch (\Throwable $e) {
             return [];
@@ -142,7 +142,7 @@ final class Precision
         foreach ($rows as $r) {
             $out[(int) $r->id] = [
                 'title' => $this->tk->normalize((string) $r->title),
-                'meta' => $this->tk->normalize((string) $r->tags . ' ' . (string) $r->category),
+                'meta' => $this->tk->normalize((string) $r->tags . ' ' . (string) $r->category) . ' ' . (string) ($r->kw ?? ''),
                 'body' => (string) ($r->body ?? ''),
             ];
         }

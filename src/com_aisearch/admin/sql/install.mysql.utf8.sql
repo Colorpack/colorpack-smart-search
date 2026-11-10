@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS `#__aisearch_log` (
 CREATE TABLE IF NOT EXISTS `#__aisearch_text` (
   `id` int unsigned NOT NULL,
   `body` mediumtext,
+  `kw` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

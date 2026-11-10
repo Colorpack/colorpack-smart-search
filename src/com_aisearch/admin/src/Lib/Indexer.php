@@ -159,7 +159,7 @@ final class Indexer
     {
         $db = $this->db;
         $q = $db->getQuery(true)
-            ->select('a.id, a.title, a.catid, a.created, a.publish_up, a.publish_down, a.access, a.metadesc, a.images, a.introtext, ' . $db->quoteName('a.fulltext') . ', c.title AS category')
+            ->select('a.id, a.title, a.catid, a.created, a.publish_up, a.publish_down, a.access, a.metadesc, a.metakey, a.images, a.introtext, ' . $db->quoteName('a.fulltext') . ', c.title AS category')
             ->from($db->quoteName('#__content', 'a'))
             ->join('LEFT', $db->quoteName('#__categories', 'c') . ' ON c.id = a.catid')
             ->where('a.state = 1')->order('a.id');
@@ -199,7 +199,9 @@ final class Indexer
         $body = TextCleaner::clean($r->introtext . ' ' . $r->fulltext);
         $tt = $this->tk->tokenize($r->title);
         $tg = $this->tk->tokenize(implode(' ', $tags));
-        $bm->add((int) $r->id, array_merge($tt, $tt, $tt, $tg, $tg,
+        $keys = $this->keywords((string) ($r->metakey ?? ''));   // the editor's own Meta Keywords: weighted like tags
+        $kt = $this->tk->tokenize($keys);
+        $bm->add((int) $r->id, array_merge($tt, $tt, $tt, $tg, $tg, $kt, $kt,
             $this->tk->tokenize(($r->category ?? '') . ' ' . $r->metadesc),
             $this->tk->tokenize(mb_substr($body, 0, 6000))));
         $snippet = trim((string) $r->metadesc) !== '' ? $r->metadesc : preg_replace('/\s+/u', ' ', $body);
@@ -211,17 +213,30 @@ final class Indexer
             'publish_up' => self::dateOrNull($r->publish_up ?? null), 'publish_down' => self::dateOrNull($r->publish_down ?? null), 'access' => max(1, (int) ($r->access ?? 1)),
         ];
         $this->db->insertObject('#__aisearch_docs', $row);
-        $this->saveText((int) $r->id, $body);
+        $this->saveText((int) $r->id, $body, $keys);
     }
 
     /** Normalised article text (first 6,000 characters) for the precision mode. Never allowed to break indexing. */
-    private function saveText(int $id, string $body): void
+    private function saveText(int $id, string $body, string $keys = ''): void
     {
+        $row = (object) ['id' => $id, 'body' => $this->tk->normalize(mb_substr($body, 0, 6000)), 'kw' => $this->tk->normalize($keys)];   // insertObject needs a variable
         try {
-            $row = (object) ['id' => $id, 'body' => $this->tk->normalize(mb_substr($body, 0, 6000))];   // insertObject needs a variable
             $this->db->insertObject('#__aisearch_text', $row);
         } catch (\Throwable $e) {
+            try {   // an upgrade that has not added the kw column yet
+                unset($row->kw);
+                $this->db->insertObject('#__aisearch_text', $row);
+            } catch (\Throwable $e2) {
+            }
         }
+    }
+
+    /** Meta Keywords as one clean string: split on commas, new lines and semicolons, repeats dropped, 30 at most. */
+    private function keywords(string $raw): string
+    {
+        $parts = preg_split('/[,;\r\n\x{060C}]+/u', $raw) ?: [];
+        $parts = array_values(array_unique(array_filter(array_map(static fn ($k) => trim((string) $k), $parts), static fn ($k) => $k !== '' && mb_strlen($k) <= 60)));
+        return implode(' ', array_slice($parts, 0, 30));
     }
 
     private function deleteText(?int $id): void
