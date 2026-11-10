@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.9.4
+
+- **EN** Fixed: the pagination buttons (Next, Previous, page numbers) on the search results page did nothing, because the page number in the link was never read. Page 2, 3 and so on now show the right results, in the List and Cards views and with Bootstrap, UIkit (YOOtheme) and plain markup. A link past the last page shows the last page.
+- **ไทย** แก้: ปุ่มแบ่งหน้า (ถัดไป ก่อนหน้า และเลขหน้า) ในหน้าผลลัพธ์ไม่ทำงาน เพราะระบบไม่เคยอ่านเลขหน้าจากลิงก์ ตอนนี้หน้า 2, 3 และถัดไปแสดงผลถูกต้อง ทั้งมุมมองรายการและการ์ด และทั้งมาร์กอัป Bootstrap, UIkit (YOOtheme) และแบบธรรมดา ลิงก์ที่เกินหน้าสุดท้ายจะแสดงหน้าสุดท้าย
+
 ## 0.9.3
 
 - **EN** Scheduled and restricted articles are handled correctly when searching. An article with a future *Start publishing* date no longer shows up before that date, an article whose *Finish publishing* date has passed stops showing up, and articles in an access level the visitor does not have (for example Registered) are hidden. This is checked at search time, so nothing has to run when a date arrives. The upgrade adds three columns to the document table; articles indexed before the upgrade are treated as public and always visible until the index is rebuilt once.

@@ -62,6 +62,9 @@ class HtmlView extends BaseHtmlView
         }
         $this->q = trim((string) $app->getInput()->getString('q', ''));
         $this->perPage = $s->perPage();
+        // which page: ?start=<number of results to skip> (Joomla's limitstart is accepted too); always a whole number of pages
+        $skip = (int) $app->getInput()->getInt('start', 0) ?: (int) $app->getInput()->getInt('limitstart', 0);
+        $this->start = max(0, (int) (floor($skip / max(1, $this->perPage)) * $this->perPage));
         // layout: visitor's choice (?v=card|list, or the remembered cookie) or the default from Options
         $default = $s->layout();
         $this->canToggle = $s->viewToggle();
