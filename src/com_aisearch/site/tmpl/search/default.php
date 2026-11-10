@@ -157,3 +157,10 @@ var f=r.querySelector('form');if(f)f.addEventListener('submit',function(){setTim
 r.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.ai-chips a,.ai-pager a,.uk-pagination a,.page-link,.ai-toggle a,.ai-item');if(a&&a.href&&!e.defaultPrevented&&!e.ctrlKey&&!e.metaKey)setTimeout(busy,0)});
 window.addEventListener('pageshow',function(e){if(e.persisted)reset()});})();
 </script>
+<?php if ($this->q !== '' && $this->settings->clickLearning()) : ?>
+<script>
+(function(){var q=<?php echo json_encode($this->q, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP); ?>,u=<?php echo json_encode(Route::_('index.php?option=com_aisearch&task=suggest.click&format=json', false)); ?>;
+function send(e){var a=e.target.closest&&e.target.closest('a[data-aid]');if(!a||!navigator.sendBeacon)return;var d=new FormData();d.append('q',q);d.append('id',a.getAttribute('data-aid'));try{navigator.sendBeacon(u,d)}catch(x){}}
+document.addEventListener('click',send,true);document.addEventListener('auxclick',send,true);})();
+</script>
+<?php endif; ?>

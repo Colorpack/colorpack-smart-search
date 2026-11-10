@@ -44,4 +44,35 @@ class SuggestController extends BaseController
         echo json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $app->close();
     }
+
+    /** Beacon from the results page: a visitor opened an article from a search. POST q, id. Answers 204. */
+    public function click(): void
+    {
+        $app = Factory::getApplication();
+        $in = $app->getInput();
+        $q = trim((string) $in->post->getString('q', ''));
+        $id = (int) $in->post->getInt('id', 0);
+        $settings = Settings::load();
+        if ($settings->clickLearning() && $q !== '' && $id > 0 && mb_strlen($q) <= 200) {
+            $session = $app->getSession();
+            $seen = (array) $session->get('com_aisearch.clicks', []);
+            $mark = md5(mb_strtolower($q)) . ':' . $id;
+            if (!in_array($mark, $seen, true) && count($seen) < 200) {   // one count per visitor session and pair
+                try {
+                    $db = Factory::getContainer()->get(DatabaseInterface::class);
+                    $exists = (int) $db->setQuery('SELECT COUNT(*) FROM ' . $db->quoteName('#__aisearch_docs') . ' WHERE id = ' . $id)->loadResult();
+                    if ($exists) {
+                        (new \Colorpack\Component\AiSearch\Administrator\Lib\Clicks($db, new \Colorpack\Component\AiSearch\Administrator\Lib\ThaiTokenizer()))->record($q, $id);
+                        $seen[] = $mark;
+                        $session->set('com_aisearch.clicks', $seen);
+                    }
+                } catch (\Throwable $e) {
+                }
+            }
+        }
+        $app->setHeader('Status', '204', true);
+        $app->setHeader('Cache-Control', 'no-store', true);
+        $app->sendHeaders();
+        $app->close();
+    }
 }

@@ -122,6 +122,13 @@ final class SearchService
         $mode = 'keyword';
         $vec = [];
         $rewrite = '';
+        if ($semantic && $this->settings->clickLearning()) {
+            $learned = (new Clicks($this->db, $tk))->learned($q, $this->settings->clickMin());
+            if ($learned) {
+                $rankings[] = $learned;
+                $weights[] = 1.0;
+            }
+        }
         $fused = $this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights)));
         $info = [];
         $hidden = 0;

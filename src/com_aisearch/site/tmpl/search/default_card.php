@@ -23,7 +23,7 @@ $showDate = $this->settings->showDate($this->layoutName);
   <?php foreach ($this->items as $d) : $img = $this->imageUrl($d); ?>
   <div>
     <div class="uk-flex uk-flex-column">
-      <a class="el-item ai-yoo-card uk-card uk-card-default uk-card-small uk-card-hover uk-transition-toggle uk-flex-1 uk-link-toggle uk-position-relative uk-position-z-index" href="<?php echo $e($this->link($d)); ?>" title="<?php echo $e($d->title); ?>">
+      <a data-aid="<?php echo (int) $d->id; ?>" class="el-item ai-yoo-card uk-card uk-card-default uk-card-small uk-card-hover uk-transition-toggle uk-flex-1 uk-link-toggle uk-position-relative uk-position-z-index" href="<?php echo $e($this->link($d)); ?>" title="<?php echo $e($d->title); ?>">
         <?php if ($img !== '') : ?>
         <div class="uk-card-media-top"><div class="uk-inline-clip ai-imgbox" style="aspect-ratio:<?php echo $w; ?>/<?php echo $h; ?>"><img class="el-image uk-transition-scale-up uk-transition-opaque" src="<?php echo $e($img); ?>" alt="" width="<?php echo $w; ?>" height="<?php echo $h; ?>" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div></div>
         <?php endif; ?>
@@ -42,7 +42,7 @@ $showDate = $this->settings->showDate($this->layoutName);
 <div class="row row-cols-1 row-cols-md-<?php echo min(2, $cols); ?> row-cols-lg-<?php echo $cols; ?> g-3 mt-1">
   <?php foreach ($this->items as $d) : $img = $this->imageUrl($d); ?>
   <div class="col">
-    <a class="card h-100 ai-bs-card text-decoration-none text-reset shadow-sm" href="<?php echo $e($this->link($d)); ?>" title="<?php echo $e($d->title); ?>">
+    <a data-aid="<?php echo (int) $d->id; ?>" class="card h-100 ai-bs-card text-decoration-none text-reset shadow-sm" href="<?php echo $e($this->link($d)); ?>" title="<?php echo $e($d->title); ?>">
       <?php if ($img !== '') : ?><div class="ai-imgbox" style="aspect-ratio:<?php echo $w; ?>/<?php echo $h; ?>"><img class="card-img-top" src="<?php echo $e($img); ?>" alt="" width="<?php echo $w; ?>" height="<?php echo $h; ?>" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div><?php endif; ?>
       <div class="card-body d-flex flex-column">
         <h4 class="card-title h6 ai-title"><?php echo $e($d->title); ?></h4>
@@ -57,7 +57,7 @@ $showDate = $this->settings->showDate($this->layoutName);
 <?php else : ?>
 <div class="ai-grid">
   <?php foreach ($this->items as $d) : $img = $this->imageUrl($d); ?>
-  <a class="ai-card" href="<?php echo $e($this->link($d)); ?>" title="<?php echo $e($d->title); ?>">
+  <a data-aid="<?php echo (int) $d->id; ?>" class="ai-card" href="<?php echo $e($this->link($d)); ?>" title="<?php echo $e($d->title); ?>">
     <?php if ($img !== '') : ?><div class="ai-imgbox" style="aspect-ratio:<?php echo $w; ?>/<?php echo $h; ?>"><img src="<?php echo $e($img); ?>" alt="" width="<?php echo $w; ?>" height="<?php echo $h; ?>" loading="lazy" style="height:100%"></div><?php endif; ?>
     <div class="ai-body">
       <h4 class="ai-title"><?php echo $e($d->title); ?></h4>

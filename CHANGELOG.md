@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.11.0
+
+- **EN** New **Learn from clicks** (Options > Search, on by default). When several visitors who searched for the same words open the same article, that article is moved up for that search. A count needs 3 clicks by default (changeable), and each visitor session counts a given search and article once. Only the search text, the article number and a count are stored, with no visitor information. The upgrade adds one small table.
+- **ไทย** เพิ่ม **เรียนรู้จากการคลิก** (ตัวเลือก > Search เปิดไว้เป็นค่าเริ่มต้น) เมื่อผู้เข้าชมหลายคนที่ค้นด้วยคำเดียวกันเปิดบทความเดียวกัน บทความนั้นจะถูกดันขึ้นสำหรับคำค้นนั้น ต้องมีคลิก 3 ครั้งขึ้นไปโดยค่าเริ่มต้น (ปรับได้) และนับหนึ่งครั้งต่อคำค้นและบทความต่อหนึ่งเซสชันของผู้เข้าชม เก็บเฉพาะข้อความที่ค้น เลขบทความ และจำนวนครั้ง ไม่เก็บข้อมูลผู้เข้าชม การอัปเกรดเพิ่มตารางเล็ก ๆ หนึ่งตาราง
+
 ## 0.10.0
 
 - **EN** New, optional **Precision mode** (off by default). Instead of listing every article that contains one of the words, it checks each candidate and keeps only articles that are really about the search: the phrase or all the key words are in the title (best), in the tags or category, or discussed in the text (not just mentioned once). Quantities with units are treated as a unit, so "เด็ก 1 เดือน" no longer returns "6 เดือน" articles. Results are ordered by this match level first, then by the usual ranking. Articles that only mention the words are hidden (Options > Search: how strict, and how common a word must be to count as context). Turn it on in Options > Search. After upgrading, press **Rebuild / update index** once so the text needed for the check is stored.

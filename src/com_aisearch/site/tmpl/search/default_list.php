@@ -13,7 +13,7 @@ $showImg = $this->settings->listShowImage();
       $tags = array_slice($this->tagList($d), 0, $this->settings->maxTags());
       $img = $showImg ? $this->imageUrl($d) : '';
   ?>
-  <a class="ai-item<?php echo $img !== '' ? ' ai-item-img' : ''; ?>" href="<?php echo $e($this->link($d)); ?>">
+  <a data-aid="<?php echo (int) $d->id; ?>" class="ai-item<?php echo $img !== '' ? ' ai-item-img' : ''; ?>" href="<?php echo $e($this->link($d)); ?>">
     <?php if ($img !== '') : ?><span class="ai-thumb" style="--tw:<?php echo $w; ?>px;--th:<?php echo $h; ?>px;--tr:<?php echo $w; ?>/<?php echo $h; ?>"><img src="<?php echo $e($img); ?>" alt="" width="<?php echo $w; ?>" height="<?php echo $h; ?>" loading="lazy"></span><?php endif; ?>
     <span class="ai-item-body">
       <?php if ($meta !== '') : ?><div class="ai-cat"><?php echo $e($meta); ?></div><?php endif; ?>
