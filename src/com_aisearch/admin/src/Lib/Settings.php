@@ -42,6 +42,10 @@ final class Settings
     /** keep this many of the AI's most similar articles even when they do not contain the words (0 = none) */
     public function precisionKeepSemantic(): int { return max(0, min(10, (int) $this->p->get('precision_keep_semantic', 0))); }
     public function logDays(): int { return max(30, min(730, (int) $this->p->get('log_days', 180))); }
+    /** searches one visitor may make per minute before being asked to slow down (0 = no limit) */
+    public function searchPerMinute(): int { return max(0, min(10000, (int) $this->p->get('rl_search_per_min', 90))); }
+    /** a server variable that carries the real visitor address behind a proxy, for example HTTP_CF_CONNECTING_IP; empty = use the connection's address */
+    public function trustIpHeader(): string { $v = strtoupper(trim((string) $this->p->get('trust_ip_header', ''))); return preg_match('/^HTTP_[A-Z0-9_]+$/', $v) ? $v : ''; }
     public function clickLearning(): bool { return (int) $this->p->get('click_learning', 1) === 1; }
     public function clickMin(): int { return max(1, min(50, (int) $this->p->get('click_min', 3))); }
     public function maxResults(): int { return max(20, min(300, (int) $this->p->get('max_results', 100))); }

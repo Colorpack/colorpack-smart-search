@@ -3,6 +3,7 @@ namespace Colorpack\Component\AiSearch\Site\Controller;
 
 \defined('_JEXEC') or die;
 
+use Colorpack\Component\AiSearch\Administrator\Lib\Guard;
 use Colorpack\Component\AiSearch\Administrator\Lib\Popular;
 use Colorpack\Component\AiSearch\Administrator\Lib\SearchService;
 use Colorpack\Component\AiSearch\Administrator\Lib\Settings;
@@ -24,6 +25,9 @@ class SuggestController extends BaseController
         $limit = max(1, min(10, (int) $app->getInput()->getInt('n', 6)));
         $out = ['items' => [], 'popular' => []];
         try {
+            if ((new Guard($db, $settings))->overSearchRate('suggest', max(1, $settings->searchPerMinute() * 4) * ($settings->searchPerMinute() > 0 ? 1 : 0))) {
+                $q = '';   // typing faster than a person: answer with the popular list only, no search
+            }
             if (mb_strlen($q) >= 2) {
                 foreach ((new SearchService($db, $settings))->suggest(mb_substr($q, 0, 100), $limit) as $d) {
                     $out['items'][] = [
@@ -53,9 +57,10 @@ class SuggestController extends BaseController
         $q = trim((string) $in->post->getString('q', ''));
         $id = (int) $in->post->getInt('id', 0);
         $settings = Settings::load();
+        $lim = $this->clickLimited();
         $lid = (int) $in->post->getInt('lid', 0);
         $pos = max(1, min(1000, (int) $in->post->getInt('pos', 1)));
-        if ($lid > 0 && $q !== '' && $id > 0) {   // tells the dashboard that this search led to a click, and where
+        if (!$lim && $lid > 0 && $q !== '' && $id > 0) {   // tells the dashboard that this search led to a click, and where
             try {
                 $db0 = Factory::getContainer()->get(DatabaseInterface::class);
                 $db0->setQuery('UPDATE ' . $db0->quoteName('#__aisearch_log') . ' SET clicked = 1, click_pos = IF(click_pos = 0, ' . $pos . ', click_pos)'
@@ -63,7 +68,7 @@ class SuggestController extends BaseController
             } catch (\Throwable $e) {
             }
         }
-        if ($settings->clickLearning() && $q !== '' && $id > 0 && mb_strlen($q) <= 200) {
+        if (!$lim && $settings->clickLearning() && $q !== '' && $id > 0 && mb_strlen($q) <= 200) {
             $session = $app->getSession();
             $seen = (array) $session->get('com_aisearch.clicks', []);
             $mark = md5(mb_strtolower($q)) . ':' . $id;
@@ -84,5 +89,15 @@ class SuggestController extends BaseController
         $app->setHeader('Cache-Control', 'no-store', true);
         $app->sendHeaders();
         $app->close();
+    }
+
+    /** More than 60 clicks a minute from one address is not a person reading results: ignore the rest. */
+    private function clickLimited(): bool
+    {
+        try {
+            return (new Guard(Factory::getContainer()->get(DatabaseInterface::class), Settings::load()))->overSearchRate('click', 60);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }

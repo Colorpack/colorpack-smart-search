@@ -35,9 +35,21 @@ final class SearchService
             $levels = [1];
         }
         $levels = $levels ?: [1];
-        return '(' . $db->quoteName('publish_up') . ' IS NULL OR ' . $db->quoteName('publish_up') . ' <= ' . $now . ')'
+        $in = implode(',', $levels);
+        $cat = $db->quoteName('#__categories');
+        // the article's category, and every category above it, must be published and open to this visitor
+        $where = '(' . $db->quoteName('publish_up') . ' IS NULL OR ' . $db->quoteName('publish_up') . ' <= ' . $now . ')'
             . ' AND (' . $db->quoteName('publish_down') . ' IS NULL OR ' . $db->quoteName('publish_down') . ' > ' . $now . ')'
-            . ' AND ' . $db->quoteName('access') . ' IN (' . implode(',', $levels) . ')';
+            . ' AND ' . $db->quoteName('access') . ' IN (' . $in . ')'
+            . ' AND ' . $db->quoteName('catid') . ' IN (SELECT c.id FROM ' . $cat . " c WHERE c.extension = 'com_content' AND c.published = 1 AND c.access IN (" . $in . ')'
+            . ' AND NOT EXISTS (SELECT 1 FROM ' . $cat . " p WHERE p.extension = 'com_content' AND p.lft < c.lft AND p.rgt > c.rgt AND (p.published <> 1 OR p.access NOT IN (" . $in . '))))';
+        try {   // a multilingual site: only articles in this language (or in all languages)
+            if (\Joomla\CMS\Language\Multilanguage::isEnabled()) {
+                $where .= ' AND ' . $db->quoteName('lang') . ' IN (' . $db->quote('*') . ', ' . $db->quote(\Joomla\CMS\Factory::getApplication()->getLanguage()->getTag()) . ')';
+            }
+        } catch (\Throwable $e) {
+        }
+        return $where;
     }
 
     /** @param int[] $ids @return int[] the ids the visitor may see, in the same order */

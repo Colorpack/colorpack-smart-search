@@ -30,6 +30,9 @@ final class Clicks
         $db->setQuery('INSERT INTO ' . $db->quoteName('#__aisearch_clicks') . ' (h, q, doc_id, clicks, updated) VALUES ('
             . $db->quote($this->key($q)) . ', ' . $db->quote($q) . ', ' . $docId . ', 1, ' . $db->quote(gmdate('Y-m-d H:i:s')) . ') '
             . 'ON DUPLICATE KEY UPDATE clicks = clicks + 1, updated = VALUES(updated)')->execute();
+        if (random_int(1, 100) === 1) {   // single clicks that never came back are noise: drop them after 90 days
+            $db->setQuery('DELETE FROM ' . $db->quoteName('#__aisearch_clicks') . ' WHERE clicks < 2 AND updated < ' . $db->quote(gmdate('Y-m-d H:i:s', time() - 90 * 86400)))->execute();
+        }
         if (random_int(1, 200) === 1) {   // forget what nobody has clicked for a year
             $db->setQuery('DELETE FROM ' . $db->quoteName('#__aisearch_clicks') . ' WHERE updated < ' . $db->quote(gmdate('Y-m-d H:i:s', time() - 365 * 86400)))->execute();
         }

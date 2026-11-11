@@ -7,3 +7,4 @@ DROP TABLE IF EXISTS `#__aisearch_usage`;
 DROP TABLE IF EXISTS `#__aisearch_text`;
 DROP TABLE IF EXISTS `#__aisearch_clicks`;
 DROP TABLE IF EXISTS `#__aisearch_synonyms`;
+DROP TABLE IF EXISTS `#__aisearch_hits`;

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `#__aisearch_docs` (
   `publish_up` datetime DEFAULT NULL,
   `publish_down` datetime DEFAULT NULL,
   `access` int unsigned NOT NULL DEFAULT 1,
+  `lang` varchar(7) NOT NULL DEFAULT '*',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -66,4 +67,12 @@ CREATE TABLE IF NOT EXISTS `#__aisearch_synonyms` (
   PRIMARY KEY (`id`),
   KEY `idx_term` (`term`(60)),
   KEY `idx_updated` (`updated`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `#__aisearch_hits` (
+  `k` char(32) NOT NULL,
+  `n` int unsigned NOT NULL DEFAULT 0,
+  `expires` int unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY (`k`),
+  KEY `idx_expires` (`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

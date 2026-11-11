@@ -102,6 +102,10 @@
         <field name="show_placeholder" type="radio" label="COM_AISEARCH_CONFIG_SHOWPH" layout="joomla.form.field.radio.switcher" default="1" filter="integer"><option value="0">JNO</option><option value="1">JYES</option></field>
         <field name="placeholder_image" type="text" label="COM_AISEARCH_CONFIG_PH" default="/images/default-main-item.jpg" />
     </fieldset>
+    <fieldset name="protection" label="COM_AISEARCH_CONFIG_PROTECTION">
+        <field name="rl_search_per_min" type="number" label="COM_AISEARCH_CONFIG_RLSEARCH" description="COM_AISEARCH_CONFIG_RLSEARCH_DESC" default="90" min="0" max="10000" filter="integer" />
+        <field name="trust_ip_header" type="text" label="COM_AISEARCH_CONFIG_IPHDR" description="COM_AISEARCH_CONFIG_IPHDR_DESC" default="" hint="HTTP_CF_CONNECTING_IP" />
+    </fieldset>
     <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL">
         <field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" filter="rules" component="com_aisearch" section="component" />
     </fieldset>

@@ -125,6 +125,8 @@ $formStyle = $sw > 0 ? 'display:' . ($themeForm || $bsForm ? 'block' : 'flex') .
   <?php endif; ?>
   <?php if (!$this->indexed) : ?>
     <p>ระบบค้นหายังไม่พร้อมใช้งาน</p>
+  <?php elseif ($this->limited) : ?>
+    <p role="status">ค้นถี่เกินไปหน่อย กรุณารอสักครู่ (ประมาณ 30 วินาที) แล้วลองค้นอีกครั้ง</p>
   <?php elseif ($this->q !== '') : ?>
     <div class="ai-bar">
     <div class="<?php echo ($this->yoo && !$isDemo) ? 'uk-h6' : 'ai-count'; ?>"><span><?php echo $isDemo ? 'พบ ' . number_format($this->total) . ' บทความที่เกี่ยวข้อง' : 'ค้นพบ ' . number_format($this->total) . ' บทความ'; ?></span></div>

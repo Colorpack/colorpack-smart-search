@@ -3,6 +3,7 @@ namespace Colorpack\Component\AiSearch\Site\View\Search;
 
 \defined('_JEXEC') or die;
 
+use Colorpack\Component\AiSearch\Administrator\Lib\Guard;
 use Colorpack\Component\AiSearch\Administrator\Lib\SearchService;
 use Colorpack\Component\AiSearch\Administrator\Lib\Settings;
 use Joomla\CMS\Factory;
@@ -30,6 +31,8 @@ class HtmlView extends BaseHtmlView
     public bool $canToggle = false;
     /** administrators only: ?explain=1 shows why each result is where it is */
     public int $logId = 0;
+    /** true when this visitor searched faster than the limit: no search was run */
+    public bool $limited = false;
     public array $explain = [];
     public array $ranks = ['bm25' => [], 'ai' => []];
     public int $hidden = 0;
@@ -87,7 +90,11 @@ class HtmlView extends BaseHtmlView
         $mode = $s->templateMode();
         $this->yoo = $mode === 'yootheme' || ($mode === 'auto' && str_contains($names, 'yootheme'));
         $this->bs = !$this->yoo && ($mode === 'bootstrap' || ($mode === 'auto' && str_contains($names, 'cassiopeia')));
-        if (mb_strlen($this->q) >= 2) {
+        if (mb_strlen($this->q) >= 2 && (new Guard(Factory::getContainer()->get(DatabaseInterface::class), $s))->overSearchRate()) {
+            $this->limited = true;
+            $app->setHeader('Retry-After', '30', true);
+            $app->setHeader('status', '429', true);
+        } elseif (mb_strlen($this->q) >= 2) {
             $svc = new SearchService(Factory::getContainer()->get(DatabaseInterface::class), $s);
             $wantExplain = $app->getInput()->getInt('explain', 0) === 1 && $app->getIdentity() && $app->getIdentity()->authorise('core.manage', 'com_aisearch');
             $r = $svc->search(mb_substr($this->q, 0, 200), $this->perPage, $this->start, $s->maxResults(), true, null, $wantExplain);

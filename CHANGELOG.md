@@ -1,5 +1,14 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.13.0
+
+- **EN** **Protection** (new Options tab). A visitor who searches more than 90 times a minute sees a short "please wait" notice instead of results (the limit is changeable, 0 turns it off); the search-box suggestions and the click counter have their own limits too. Counters use a hash of the visitor's address, never the address itself, and any failure lets the visitor through, so the protection cannot take the search down. If the site is behind a proxy such as Cloudflare, name the header that carries the real address (Options > Protection). The upgrade adds one small table.
+- **EN** Fixed: an article whose **category** was unpublished, trashed or restricted (or sat under such a category) could still appear in results. It is now hidden at search time, so nothing has to run when a category changes. On a multilingual site, only articles in the visitor's language (or in all languages) are shown; press Rebuild / update index once so each article's language is stored.
+- **EN** The click counter ignores single clicks older than 90 days. 
+- **ไทย** **การป้องกัน** (แท็บใหม่ในตัวเลือก) ผู้เข้าชมที่ค้นเกิน 90 ครั้งต่อนาทีจะเห็นข้อความขอให้รอสักครู่แทนผลลัพธ์ (ปรับได้ ใส่ 0 เพื่อปิด) ช่องแนะนำคำค้นและตัวนับคลิกก็มีเพดานของตัวเอง ตัวนับใช้แฮชของที่อยู่ผู้เข้าชม ไม่เก็บที่อยู่จริง และถ้าระบบป้องกันผิดพลาดจะปล่อยผ่าน จึงไม่ทำให้การค้นล่ม ถ้าเว็บอยู่หลังพร็อกซีอย่าง Cloudflare ให้ระบุส่วนหัวที่มีที่อยู่จริง (ตัวเลือก > การป้องกัน) การอัปเกรดเพิ่ม 1 ตารางเล็ก ๆ
+- **ไทย** แก้: บทความที่อยู่ใน**หมวดที่ปิดเผยแพร่ ถูกลบ หรือจำกัดสิทธิ์** (หรืออยู่ใต้หมวดแบบนั้น) ยังโผล่ในผลลัพธ์ได้ ตอนนี้ถูกซ่อนตอนค้น ไม่ต้องรอให้มีงานรันเมื่อหมวดเปลี่ยน บนเว็บหลายภาษา จะแสดงเฉพาะบทความในภาษาของผู้เข้าชมหรือบทความที่ใช้ได้ทุกภาษา ให้กด Rebuild / update index หนึ่งครั้งเพื่อบันทึกภาษาของแต่ละบทความ
+- **ไทย** ตัวนับคลิกข้ามคลิกครั้งเดียวที่เก่ากว่า 90 วัน 
+
 ## 0.12.0
 
 - **EN** New **Synonyms** management page (Dashboard > Improve results > Synonyms), replacing the single text box in the options. Each rule is a row you can add, edit, switch off without deleting, search, filter by status or source, delete in bulk, import and export as text. Two kinds of rule: one-way ("when someone types X, also find Y and Z") and groups of words that mean the same. A tester shows which rules fire for a search and the words they add, and each rule shows how many searches of the last 30 days it applied to. Adding a rule for a phrase that already has one merges them. The dashboard's "add a synonym" for searches that found nothing writes here too. Your existing synonym text is moved into the table the first time you open the page; until then the search keeps using it, so an upgrade changes nothing by itself. The upgrade adds one table.
