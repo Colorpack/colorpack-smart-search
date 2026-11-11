@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.12.0
+
+- **EN** New **Synonyms** management page (Dashboard > Improve results > Synonyms), replacing the single text box in the options. Each rule is a row you can add, edit, switch off without deleting, search, filter by status or source, delete in bulk, import and export as text. Two kinds of rule: one-way ("when someone types X, also find Y and Z") and groups of words that mean the same. A tester shows which rules fire for a search and the words they add, and each rule shows how many searches of the last 30 days it applied to. Adding a rule for a phrase that already has one merges them. The dashboard's "add a synonym" for searches that found nothing writes here too. Your existing synonym text is moved into the table the first time you open the page; until then the search keeps using it, so an upgrade changes nothing by itself. The upgrade adds one table.
+- **ไทย** เพิ่มหน้า **คำพ้อง** สำหรับจัดการโดยเฉพาะ (แดชบอร์ด > ปรับปรุงผลการค้น > คำพ้อง) แทนช่องข้อความช่องเดียวในตัวเลือก แต่ละกฎเป็นหนึ่งแถว เพิ่ม แก้ไข ปิดใช้โดยไม่ต้องลบ ค้นหา กรองตามสถานะหรือแหล่งที่มา ลบทีละหลายรายการ นำเข้าและส่งออกเป็นข้อความได้ กฎมี 2 แบบ คือทางเดียว ("เมื่อมีคนพิมพ์ X ให้หา Y และ Z ด้วย") และกลุ่มคำที่ความหมายเท่ากัน มีช่องทดสอบว่าคำค้นหนึ่งใช้กฎข้อไหนและเพิ่มคำอะไร และแสดงว่าแต่ละกฎถูกใช้กับการค้นกี่ครั้งใน 30 วัน ถ้าเพิ่มกฎของคำที่มีกฎอยู่แล้วจะรวมเข้าด้วยกัน ปุ่ม "เพิ่มคำพ้อง" ในแดชบอร์ดสำหรับคำที่ค้นแล้วไม่เจอก็เขียนมาที่นี่ คำพ้องเดิมจากช่องข้อความจะถูกย้ายเข้าตารางเมื่อเปิดหน้านี้ครั้งแรก ก่อนหน้านั้นระบบยังใช้ช่องข้อความเดิม การอัปเกรดจึงไม่เปลี่ยนอะไรเอง การอัปเกรดเพิ่ม 1 ตาราง
+
 ## 0.11.1
 
 - **EN** The article's **Meta Keywords** are now used by the search. They count as much as tags (more than the body text) and the precision mode treats a match in them like a match in the tags. Press **Rebuild / update index** once after upgrading; articles saved afterwards are updated automatically. The upgrade adds one column to the text table.

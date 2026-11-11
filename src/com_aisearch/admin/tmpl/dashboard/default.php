@@ -85,6 +85,8 @@ $token = Session::getFormToken();
   <div class="ss-tools">
     <div class="ss-card ss-tool"><h3>เปรียบเทียบโหมดการค้น</h3><p class="ss-sub">พิมพ์คำค้นหลายคำ แล้วดูผลปัจจุบันเทียบกับโหมดความแม่นยำ โดยไม่กระทบผู้เข้าชม ควรลองก่อนเปิดโหมดความแม่นยำ</p>
       <a class="btn btn-primary btn-sm align-self-start" href="index.php?option=com_aisearch&amp;view=compare">เปิดหน้าเปรียบเทียบ</a></div>
+    <div class="ss-card ss-tool"><h3>คำพ้อง</h3><p class="ss-sub">จัดการคำที่มีความหมายเหมือนกัน เช่น "นมน้อย" = "น้ำนมไม่พอ" เพิ่ม แก้ ปิดใช้ ค้นหา นำเข้า ส่งออก และทดสอบคำค้นได้</p>
+      <a class="btn btn-primary btn-sm align-self-start" href="index.php?option=com_aisearch&amp;view=synonyms">จัดการคำพ้อง</a></div>
     <?php if (Factory::getApplication()->getIdentity()->authorise('core.admin', 'com_aisearch')) : ?>
     <div class="ss-card ss-tool"><h3>ตัวเลือกของระบบ</h3><p class="ss-sub">ตั้งค่าโหมดความแม่นยำ เรียนรู้จากการคลิก คำพ้อง รูปแบบการแสดงผล และอื่น ๆ</p>
       <a class="btn btn-outline-secondary btn-sm align-self-start" href="index.php?option=com_config&amp;view=component&amp;component=com_aisearch">เปิดตัวเลือก</a></div>

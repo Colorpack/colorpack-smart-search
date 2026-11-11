@@ -12,21 +12,12 @@ final class SearchService
 
     public function __construct(private DatabaseInterface $db, private Settings $settings) {}
 
-    /** "คำ = พ้อง1, พ้อง2" per line */
+    private ?array $synMap = null;
+
+    /** phrase => alternatives, from the synonym rules (or the old text box until the rules have been moved in) */
     private function synonyms(): array
     {
-        $map = [];
-        foreach (preg_split('/\R/u', $this->settings->synonyms()) ?: [] as $line) {
-            if (!str_contains($line, '=')) {
-                continue;
-            }
-            [$k, $v] = array_map('trim', explode('=', $line, 2));
-            $alts = array_filter(array_map('trim', explode(',', $v)));
-            if ($k !== '' && $alts) {
-                $map[$k] = $alts;
-            }
-        }
-        return $map;
+        return $this->synMap ??= (new SynonymStore($this->db, $this->settings))->map();
     }
 
     /**

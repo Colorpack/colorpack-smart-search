@@ -19,8 +19,7 @@
             <option value="4">COM_AISEARCH_PREC_TIER_4</option>
         </field>
         <field name="precision_common_pct" type="number" label="COM_AISEARCH_CONFIG_PREC_COMMON" description="COM_AISEARCH_CONFIG_PREC_COMMON_DESC" default="40" min="10" max="90" filter="integer" showon="precision_mode:1" />
-        <field name="synonyms" type="textarea" label="COM_AISEARCH_CONFIG_SYNONYMS" description="COM_AISEARCH_CONFIG_SYNONYMS_DESC" rows="12" cols="60" filter="raw"
-            default="เบื่ออาหาร = กินยาก, ไม่ยอมกินข้าว, เบื่อข้าว&#10;กินยาก = เบื่ออาหาร, เลือกกิน, ไม่ยอมกิน&#10;ตัวเล็ก = เตี้ย, ไม่สูง, น้ำหนักน้อย&#10;ไม่โต = ไม่สูง, เตี้ย, ตัวเล็ก, โตช้า&#10;ลูกสูง = ส่วนสูง, สูงตามเกณฑ์, เพิ่มความสูง&#10;พูดช้า = พูดไม่ชัด, พัฒนาการทางภาษา, ไม่ยอมพูด&#10;ติดจอ = ดูมือถือ, เล่นแท็บเล็ต, หน้าจอ" />
+        <field name="synonyms_note" type="note" label="COM_AISEARCH_CONFIG_SYNONYMS" description="COM_AISEARCH_CONFIG_SYNONYMS_DESC" class="alert alert-info" />
     </fieldset>
     <fieldset name="appearance" label="COM_AISEARCH_CONFIG_APPEARANCE">
         <field name="display_mode" type="list" label="COM_AISEARCH_CONFIG_DISPLAY" description="COM_AISEARCH_CONFIG_DISPLAY_DESC" default="both_list">
