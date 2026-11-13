@@ -134,19 +134,46 @@ $token = Session::getFormToken();
     li.querySelector('.aisearch-ico').textContent = state === 'ok' ? '✓' : state === 'err' ? '✕' : '';
     li.querySelector('.ai-note').textContent = note ? '· ' + note : '';
   }
+  function call(task) {
+    return fetch(base + task, { method: 'POST', credentials: 'same-origin' }).then(function (r) {
+      return r.text().then(function (t) {
+        var j; try { j = JSON.parse(t); } catch (e) { throw new Error('เซิร์ฟเวอร์ตอบกลับผิดรูปแบบ (HTTP ' + r.status + ')'); }
+        if (!j.ok) throw new Error(j.error || 'เกิดข้อผิดพลาด');
+        return j;
+      });
+    });
+  }
+  // The server (or a proxy) may give up waiting on a slow rebuild with HTTP 504; the rebuild itself carries on, so ask how it is doing.
+  var prevStarted = 0;
+  function poll() {
+    return new Promise(function (resolve, reject) {
+      var fails = 0, idle = 0;
+      (function tick() {
+        fetch(base + 'index.ajaxStatus', { method: 'POST', credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
+          fails = 0;
+          if (!j.ok) return reject(new Error(j.error || 'เกิดข้อผิดพลาด'));
+          var st = j.status;
+          if (st.state === 'done' && st.started !== prevStarted) return resolve(j.result);   // not the finished run from before this click
+          if (st.state === 'done') { if (++idle > 8) return reject(new Error('ไม่พบงานสร้างดัชนีที่กำลังทำงาน ลองกดอีกครั้ง')); return setTimeout(tick, 1500); }
+          if (st.state === 'error') return reject(new Error(st.error || 'เกิดข้อผิดพลาด'));
+          if (st.state === 'idle') return reject(new Error('ไม่พบงานสร้างดัชนีที่กำลังทำงาน ลองกดอีกครั้ง'));
+          status.textContent = 'เซิร์ฟเวอร์ตอบช้า แต่กำลังสร้างดัชนีต่อ… ' + (st.total ? fmt(st.done) + ' / ' + fmt(st.total) + ' บทความ' : 'กำลังเริ่ม');
+          setTimeout(tick, 3000);
+        }).catch(function () { if (++fails > 10) return reject(new Error('ติดต่อเซิร์ฟเวอร์ไม่ได้')); setTimeout(tick, 5000); });
+      })();
+    });
+  }
+  function rebuild() {
+    // remember the last finished run, so that a late answer about it is not taken for this one
+    return fetch(base + 'index.ajaxStatus', { method: 'POST', credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) { prevStarted = (j && j.status && j.status.state === 'done') ? j.status.started : 0; }, function () {}).then(function () { return call('index.ajaxRebuild'); }).then(function (r) { return r.running ? poll() : r; }, function (err) { return poll().catch(function (e2) { throw e2.message ? e2 : err; }); });
+  }
   startBtn.addEventListener('click', function () {
     if (running) return;
     running = true; startBtn.disabled = true; panel.style.display = ''; reloadBtn.style.display = 'none';
     step(1, 'run'); step(2, '');
     bar.style.width = '100%'; bar.className = 'progress-bar progress-bar-striped progress-bar-animated'; bar.textContent = '';
     status.textContent = 'กำลังอ่านบทความทั้งหมดและตัดคำ — ปกติใช้เวลาไม่กี่วินาที ถึงครึ่งนาที';
-    fetch(base + 'index.ajaxRebuild', { method: 'POST', credentials: 'same-origin' }).then(function (r) {
-      return r.text().then(function (t) {
-        var j; try { j = JSON.parse(t); } catch (e) { throw new Error('เซิร์ฟเวอร์ตอบกลับผิดรูปแบบ (HTTP ' + r.status + ') — ลองรีเฟรชหน้าแล้วทำใหม่'); }
-        if (!j.ok) throw new Error(j.error || 'เกิดข้อผิดพลาด');
-        return j;
-      });
-    }).then(function (r) {
+    rebuild().then(function (r) {
       step(1, 'ok', fmt(r.docs) + ' บทความ · ' + r.seconds + ' วินาที'); step(2, 'ok');
       bar.className = 'progress-bar bg-success'; bar.textContent = '100%'; status.textContent = 'เสร็จแล้ว';
     }).catch(function (err) {

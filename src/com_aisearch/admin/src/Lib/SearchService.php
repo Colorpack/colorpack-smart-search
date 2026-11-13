@@ -27,7 +27,7 @@ final class SearchService
      * and the normal search runs instead.
      * @return array{ids:int[],info:array}|null
      */
-    private function titleMatches(array $units, array $concepts, array $fired, ThaiTokenizer $tk): ?array
+    private function titleMatches(array $units, array $concepts, array $fired, ThaiTokenizer $tk, Bm25 $bm): ?array
     {
         if ($this->settings->shortQueryMode() === 0 || count($units) !== 1 || $concepts || mb_strlen($units[0]) < 2 || ctype_digit($units[0])) {
             return null;
@@ -71,17 +71,24 @@ final class SearchService
         } catch (\Throwable $e) {
         }
         $popular = $this->settings->shortQueryMode() === 2;
-        $sort = static function (array $set) use ($hits, $popular): array {
+        // the article that has the word in the most fields (title, tags, keywords, description, opening) comes first; then newest or most read
+        try {
+            $cover = (new Precision($db, $tk, $bm, $fired, $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), 0))->coverageOf($units, $all);
+        } catch (\Throwable $e) {
+            $cover = [];
+        }
+        $sort = static function (array $set) use ($hits, $popular, $cover): array {
             $ids = array_keys($set);
-            usort($ids, static function ($x, $y) use ($set, $hits, $popular) {
+            usort($ids, static function ($x, $y) use ($set, $hits, $popular, $cover) {
                 $dx = (string) $set[$x]->created; $dy = (string) $set[$y]->created; $hx = $hits[$x] ?? 0; $hy = $hits[$y] ?? 0;
-                return $popular ? [$hy, $dy] <=> [$hx, $dx] : [$dy, $hy] <=> [$dx, $hx];
+                $cx = $cover[$x] ?? 0; $cy = $cover[$y] ?? 0;
+                return $popular ? [-$cx, $hy, $dy] <=> [-$cy, $hx, $dx] : [-$cx, $dy, $hy] <=> [-$cy, $dx, $hx];
             });
             return $ids;
         };
         $info = [];
         $ids = [];
-        foreach ($sort($a) as $id) { $ids[] = $id; $info[$id] = ['tier' => 1, 'why' => 'the word is in the title', 'context' => true]; }
+        foreach ($sort($a) as $id) { $ids[] = $id; $info[$id] = ['tier' => 1, 'why' => 'the word is in the title', 'context' => true, 'fields' => $cover[$id] ?? 0]; }
         foreach ($sort($b) as $id) { $ids[] = $id; $info[$id] = ['tier' => 2, 'why' => 'a synonym is in the title', 'context' => true]; }
         return ['ids' => $ids, 'info' => $info];
     }
@@ -221,7 +228,7 @@ final class SearchService
         $terms = array_values($terms);
         $rankings = [[]]; $weights = []; $mode = 'keyword'; $vec = []; $rewrite = ''; $fused = []; $info = []; $hidden = 0;
         // a very short search (one word): every article with the word in its title, newest first, and nothing else
-        $short = $this->titleMatches($units, $concepts, $fired, $tk);
+        $short = $this->titleMatches($units, $concepts, $fired, $tk, $bm);
         if ($short !== null) {
             $fused = $short['ids'];
             $info = $short['info'];

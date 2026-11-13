@@ -81,9 +81,11 @@ final class Precision
                     $dens += min(5, $best);
                 }
             }
-            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx], $dens];
+            $cov = $tier < 9 ? $this->coverage($plan, $t) : 0;
+            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx, 'fields' => $cov], $dens, $cov];
         }
-        usort($rows, static fn ($a, $b) => [$a[1], -$a[2], -($a[5] ?? 0), $a[3]] <=> [$b[1], -$b[2], -($b[5] ?? 0), $b[3]]);
+        // the article that has the search in the most fields comes first (title, tags, keywords, description, opening), then the better level, then the rest
+        usort($rows, static fn ($a, $b) => [-($a[6] ?? 0), $a[1], -$a[2], -($a[5] ?? 0), $a[3]] <=> [-($b[6] ?? 0), $b[1], -$b[2], -($b[5] ?? 0), $b[3]]);
         $out = []; $info = []; $hidden = 0;
         foreach ($rows as [$id, $tier, , , $inf]) {
             if ($tier <= $this->maxTier + ($this->keepSemantic > 0 ? 1 : 0) && $tier < 9) {
@@ -155,10 +157,17 @@ final class Precision
             return [];
         }
         foreach ($rows as $r) {
+            [$keys, $desc] = array_pad(explode("\u{00A6}", (string) ($r->kw ?? ''), 2), 2, '');
+            $body = (string) ($r->body ?? '');
             $out[(int) $r->id] = [
                 'title' => $this->tk->normalize((string) $r->title),
-                'meta' => $this->tk->normalize((string) $r->tags . ' ' . (string) $r->category) . ' ' . (string) ($r->kw ?? ''),
-                'body' => (string) ($r->body ?? ''),
+                'meta' => $this->tk->normalize((string) $r->tags . ' ' . (string) $r->category) . ' ' . $keys . ' ' . $desc,
+                'body' => $body,
+                // the fields a visitor expects a search word to appear in, kept apart so they can be counted
+                'tags' => $this->tk->normalize((string) $r->tags),
+                'keys' => $keys,
+                'desc' => $desc,
+                'intro' => mb_substr($body, 0, 300),
             ];
         }
         return $out;
@@ -214,6 +223,50 @@ final class Precision
             }
         }
         return true;
+    }
+
+    /**
+     * In how many of the five fields (title, tags, Meta Keywords, Meta Description, opening of the article) does each article have the search?
+     * @param int[] $ids @return array<int,int> id => 0..5
+     */
+    public function coverageOf(array $tokens, array $ids): array
+    {
+        $plan = $this->plan($tokens);
+        $out = [];
+        foreach ($this->texts($ids) as $id => $t) {
+            $out[$id] = $this->coverage($plan, $t);
+        }
+        return $out;
+    }
+
+    /** Does this piece of text have everything the search asks for (all its words, or its number and unit)? */
+    private function covers(array $plan, string $text): bool
+    {
+        if ($text === '') {
+            return false;
+        }
+        if ($plan['phrases']) {
+            foreach ($plan['phrases'] as $p) {
+                if (!preg_match($this->phraseRe($p), $text)) {
+                    return false;
+                }
+            }
+        } elseif (!$plan['core']) {
+            return false;
+        }
+        return !$plan['core'] || $this->allIn($plan['core'], $text);
+    }
+
+    /** In how many of title, tags, Meta Keywords, Meta Description and the opening of the article does the search appear in full? */
+    private function coverage(array $plan, array $t): int
+    {
+        $n = 0;
+        foreach (['title', 'tags', 'keys', 'desc', 'intro'] as $f) {
+            if ($this->covers($plan, (string) ($t[$f] ?? ''))) {
+                $n++;
+            }
+        }
+        return $n;
     }
 
     /** @return array{0:int,1:string,2:bool} tier, reason, has the context in title/tags/category */

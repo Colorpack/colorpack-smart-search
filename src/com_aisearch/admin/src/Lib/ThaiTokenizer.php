@@ -8,6 +8,8 @@ namespace Colorpack\Component\AiSearch\Administrator\Lib;
  */
 final class ThaiTokenizer
 {
+    private static ?\IntlBreakIterator $iterator = null;
+
     private const THAI_DIGITS = ['๐' => '0', '๑' => '1', '๒' => '2', '๓' => '3', '๔' => '4',
         '๕' => '5', '๖' => '6', '๗' => '7', '๘' => '8', '๙' => '9'];
 
@@ -40,7 +42,7 @@ final class ThaiTokenizer
         if ($text === '') {
             return [];
         }
-        $it = \IntlBreakIterator::createWordInstance('th');
+        $it = self::$iterator ??= \IntlBreakIterator::createWordInstance('th');   // creating it is slow: once per request
         $it->setText($text);
         $tokens = [];
         $start = 0;
@@ -63,6 +65,16 @@ final class ThaiTokenizer
      * (เบาหวาน -> เบา, หวาน), so the pair term is what lets the search see that the pieces stood together.
      * @param string[] $tokens @return string[]
      */
+    public static function pairs(array $tokens): array
+    {
+        $out = [];
+        for ($i = 0, $n = count($tokens) - 1; $i < $n; $i++) {
+            $out[] = $tokens[$i] . self::JOIN . $tokens[$i + 1];
+        }
+        return $out;
+    }
+
+    /** @param string[] $tokens @return string[] */
     public static function withPairs(array $tokens): array
     {
         $out = $tokens;

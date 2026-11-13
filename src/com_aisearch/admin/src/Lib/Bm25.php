@@ -26,11 +26,12 @@ final class Bm25
         $this->len[$id] = count($tokens);
         foreach (array_count_values($tokens) as $t => $tf) {
             $t = (string) $t;
-            $p = $this->postings[$t] ?? '';
-            if (is_array($p)) {
-                $p = self::pack($p);
+            if (!isset($this->postings[$t])) {
+                $this->postings[$t] = '';
+            } elseif (is_array($this->postings[$t])) {
+                $this->postings[$t] = self::pack($this->postings[$t]);
             }
-            $this->postings[$t] = $p . pack('NN', $id, $tf);
+            $this->postings[$t] .= pack('NN', $id, $tf);   // appended in place: building the index of a big site must not copy every list again and again
         }
         $this->avg = array_sum($this->len) / max(1, count($this->len));
     }

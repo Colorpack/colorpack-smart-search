@@ -4,6 +4,7 @@ namespace Colorpack\Component\AiSearch\Administrator\Controller;
 \defined('_JEXEC') or die;
 
 use Colorpack\Component\AiSearch\Administrator\Lib\Indexer;
+use Colorpack\Component\AiSearch\Administrator\Lib\RebuildJob;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\Controller\BaseController;
@@ -38,11 +39,30 @@ class IndexController extends BaseController
         if (!Session::checkToken('request') || !$user || !$user->authorise('core.manage', 'com_aisearch')) {
             $this->json(['ok' => false, 'error' => 'Not allowed or session expired. Reload the page and try again.']);
         }
+        @ignore_user_abort(true);
+        if (RebuildJob::running()) {
+            $this->json(['ok' => true, 'running' => true]);
+        }
         try {
-            $r = (new Indexer(Factory::getContainer()->get(DatabaseInterface::class)))->rebuildAll();
+            $r = RebuildJob::run(new Indexer(Factory::getContainer()->get(DatabaseInterface::class)));
             $this->json(['ok' => true, 'docs' => $r['docs'], 'seconds' => $r['seconds']]);
         } catch (\Throwable $e) {
             $this->json(['ok' => false, 'error' => $e->getMessage()]);
         }
+    }
+
+    /** AJAX: how far the rebuild has got. */
+    public function ajaxStatus(): void
+    {
+        $user = $this->app->getIdentity();
+        if (!Session::checkToken('request') || !$user || !$user->authorise('core.manage', 'com_aisearch')) {
+            $this->json(['ok' => false, 'error' => 'Not allowed or session expired. Reload the page and try again.']);
+        }
+        $st = RebuildJob::state();
+        $out = ['ok' => true, 'status' => $st];
+        if ($st['state'] === 'done') {
+            $out['result'] = ['docs' => $st['docs'], 'seconds' => $st['seconds']];
+        }
+        $this->json($out);
     }
 }

@@ -230,6 +230,9 @@ class HtmlView extends BaseHtmlView
         $parts = [];
         if ($e) {
             $parts[] = 'tier ' . $e['tier'] . ': ' . $e['why'] . (!empty($e['context']) ? ' + context' : '');
+            if (isset($e['fields'])) {
+                $parts[] = 'has the search in ' . (int) $e['fields'] . ' of 5 fields (title, tags, keywords, description, opening)';
+            }
         }
         $parts[] = 'keyword rank ' . (isset($this->ranks['bm25'][$id]) ? $this->ranks['bm25'][$id] + 1 : '-');
         $parts[] = 'AI rank ' . (isset($this->ranks['ai'][$id]) ? $this->ranks['ai'][$id] + 1 : '-');

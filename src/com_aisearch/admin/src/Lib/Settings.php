@@ -34,7 +34,7 @@ final class Settings
         return $v !== '' ? $v : self::DEFAULT_SYNONYMS;
     }
     /** Precision mode: only show the articles that answer the search directly (see Precision). Off unless switched on. */
-    public function precisionMode(): bool { return (int) $this->p->get('precision_mode', 0) === 1; }
+    public function precisionMode(): bool { return (int) $this->p->get('precision_mode', 1) === 1; }
     /** 2 = only title/tags/category matches, 3 = also articles that discuss the topic in the text (default), 4 = also weak matches */
     public function precisionMaxTier(): int { return max(1, min(4, (int) $this->p->get('precision_max_tier', 3))); }
     /** a word that appears in at least this share of all articles is only context, not the topic */
