@@ -82,10 +82,12 @@ final class Precision
                 }
             }
             $cov = $tier < 9 ? $this->coverage($plan, $t) : 0;
-            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx, 'fields' => $cov], $dens, $cov];
+            $cls = $tier <= 2 && !$plan['phrases'] ? $this->titleCloseness($plan['core'], $t['title']) : 0;
+            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx, 'fields' => $cov, 'close' => $cls], $dens, $cov, $cls];
         }
-        // the article that has the search in the most fields comes first (title, tags, keywords, description, opening), then the better level, then the rest
-        usort($rows, static fn ($a, $b) => [-($a[6] ?? 0), $a[1], -$a[2], -($a[5] ?? 0), $a[3]] <=> [-($b[6] ?? 0), $b[1], -$b[2], -($b[5] ?? 0), $b[3]]);
+        // the better level first (the words in the title, then in tags / keywords / description, then in the text); inside a level the title that says the words close together comes first, then the article that has
+        // the search in the most fields (title, tags, keywords, description, opening) comes first, then the rest
+        usort($rows, static fn ($a, $b) => [$a[1], $a[7] ?? 0, -($a[6] ?? 0), -$a[2], -($a[5] ?? 0), $a[3]] <=> [$b[1], $b[7] ?? 0, -($b[6] ?? 0), -$b[2], -($b[5] ?? 0), $b[3]]);
         $out = []; $info = []; $hidden = 0;
         foreach ($rows as [$id, $tier, , , $inf]) {
             if ($tier <= $this->maxTier + ($this->keepSemantic > 0 ? 1 : 0) && $tier < 9) {
@@ -237,6 +239,50 @@ final class Precision
             $out[$id] = $this->coverage($plan, $t);
         }
         return $out;
+    }
+
+    /**
+     * How close together the topic words stand in the title, as a class: 0 = within a short phrase (the title is about them),
+     * 1 = within a sentence, 2 = far apart, 3 = not all in the title. A title that says "ท้องปุ๊บ เป็นเบาหวาน" is about both;
+     * one that has the first word at its start and the second at its very end only mentions the second.
+     */
+    private function titleCloseness(array $core, string $title): int
+    {
+        $words = array_values(array_filter($core, static fn ($w) => !str_starts_with($w, '§')));
+        if (count($words) < 2) {
+            return $words && $this->has($title, $words[0]) ? 0 : 3;
+        }
+        $pos = [];
+        foreach ($words as $w) {
+            $best = [];
+            foreach ($this->formsOf($w) as $f) {
+                $o = 0;
+                while (count($best) < 20 && ($p = mb_strpos($title, $f, $o)) !== false) {
+                    $best[] = [$p, mb_strlen($f)];
+                    $o = $p + 1;
+                }
+            }
+            if (!$best) {
+                return 3;
+            }
+            $pos[] = $best;
+        }
+        $min = PHP_INT_MAX;
+        foreach ($pos[0] as [$p0, $l0]) {
+            $lo = $p0; $hi = $p0 + $l0;
+            foreach (array_slice($pos, 1) as $list) {
+                $near = null;
+                foreach ($list as [$p, $l]) {
+                    if ($near === null || abs($p - $p0) < abs($near[0] - $p0)) {
+                        $near = [$p, $l];
+                    }
+                }
+                $lo = min($lo, $near[0]);
+                $hi = max($hi, $near[0] + $near[1]);
+            }
+            $min = min($min, $hi - $lo);
+        }
+        return $min <= 24 ? 0 : ($min <= 48 ? 1 : 2);
     }
 
     /** Does this piece of text have everything the search asks for (all its words, or its number and unit)? */
