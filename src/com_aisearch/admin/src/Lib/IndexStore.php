@@ -74,9 +74,20 @@ final class IndexStore
     {
         $raw = serialize($bm);
         $now = gmdate('Y-m-d H:i:s');
-        $o = (object) ['id' => 1, 'data' => gzcompress($raw, 6), 'updated' => $now];
+        // the fast copy is written in two pieces and the string is dropped as soon as it is compressed: each copy of a big index costs memory in a rebuild
+        if (($fh = @fopen($this->cacheFile(), 'wb')) && flock($fh, LOCK_EX)) {
+            fwrite($fh, $now . "\n");
+            fwrite($fh, $raw);
+            flock($fh, LOCK_UN);
+        }
+        if (is_resource($fh)) {
+            fclose($fh);
+        }
+        $gz = gzcompress($raw, 6);
+        unset($raw);
+        $o = (object) ['id' => 1, 'data' => $gz, 'updated' => $now];
+        unset($gz);
         $this->db->setQuery('DELETE FROM ' . $this->db->quoteName('#__aisearch_index') . ' WHERE id = 1')->execute();
         $this->db->insertObject('#__aisearch_index', $o);
-        @file_put_contents($this->cacheFile(), $now . "\n" . $raw, LOCK_EX);
     }
 }

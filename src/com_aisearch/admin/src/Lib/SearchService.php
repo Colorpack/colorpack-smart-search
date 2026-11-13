@@ -183,6 +183,7 @@ final class SearchService
         if (!$bm) {
             return ['items' => [], 'total' => 0, 'ms' => 0.0, 'indexed' => false, 'mode' => 'keyword'];
         }
+        Lexicon::boot($this->db);   // the words the index was built with: the search must cut words the same way
         $tk = new ThaiTokenizer();
         $qn = $tk->normalize($q);
         $db = $this->db;
@@ -248,6 +249,9 @@ final class SearchService
                 continue;
             }
             $consumed = $tk->tokenize((string) $key);
+            if (count($consumed) < 2) {
+                continue;   // a rule for one word of the search: the usual synonym handling, nothing is replaced
+            }
             $removed = 0; $needed = 0;
             foreach ($consumed as $ct) {
                 if (QueryTerms::isFiller($ct)) {

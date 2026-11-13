@@ -1,5 +1,18 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.19.0
+
+- **EN** **A word list for the site.** Thai word splitting (ICU) cuts some everyday words in two (เบาหวาน -> เบา + หวาน, น้ำยา -> น้ำ + ยา, ตั้งครรภ์ -> ตั้ง + ครรภ์), and the pieces then match other words. A **lexicon** now puts the pieces back together, in the index and in the search alike. It has three layers: a short starter list for sites about mothers and children, the **names of the site's own tags and categories** (a name that is two words joined, found when the index is rebuilt), and the words you add on the new **Words** page (Dashboard > Improve results > Words).
+- **EN** The Words page lists the words, lets you add (join into one word, or "never join"), switch off, delete, import and export them, and has a **tester** that shows how a text is cut by ICU alone and with the lexicon. A button **"suggest words"** looks for pairs of neighbouring pieces that stand together far more often than chance (and are not just a piece of a longer word) and lists them for you to tick; nothing is added by itself.
+- **EN** The search uses the lexicon that was saved with the index, so changing the words does nothing until you press **Rebuild / update index**; the page says when a change is waiting. A rebuild that fails leaves the old words in place too.
+- **EN** Question wording ("ทำยังไง", "ยี่ห้อไหน", "ขณะ") is now taken out of the typed text before the words are cut, so a lexicon cannot turn it into a word.
+- **EN** The rebuild saves the index with fewer copies in memory: its peak is about 110 MB on 3,267 articles. **Press Rebuild / update index after upgrading.**
+- **ไทย** **คลังคำของเว็บ** ตัวตัดคำภาษาไทย (ICU) ตัดคำที่ใช้บ่อยบางคำเป็นสองชิ้น (เบาหวาน -> เบา + หวาน, น้ำยา -> น้ำ + ยา, ตั้งครรภ์ -> ตั้ง + ครรภ์) แล้วชิ้นเหล่านั้นไปตรงกับคำอื่น ตอนนี้ **คลังคำ** นำชิ้นกลับมารวมกัน ทั้งในดัชนีและตอนค้น มี 3 ชั้น: รายการเริ่มต้นสั้น ๆ สำหรับเว็บแม่และเด็ก **ชื่อแท็กและหมวดของเว็บเอง** (ชื่อที่เป็นสองคำต่อกัน ตรวจพบตอนสร้างดัชนี) และคำที่คุณเพิ่มในหน้า **คำศัพท์** ใหม่ (แดชบอร์ด > ปรับปรุงผลการค้น > คำศัพท์)
+- **ไทย** หน้าคำศัพท์แสดงรายการ เพิ่ม (รวมเป็นคำเดียว หรือ "ห้ามรวม") ปิดใช้ ลบ นำเข้า ส่งออก และมี **ช่องทดสอบ** แสดงว่า ICU เปล่า ๆ กับเมื่อใช้คลังคำ ตัดต่างกันอย่างไร ปุ่ม **"ค้นหาคำที่น่าจะเพิ่ม"** หาคู่ชิ้นที่อยู่ติดกันบ่อยกว่าบังเอิญมาก (และไม่ใช่แค่ส่วนของคำที่ยาวกว่า) แล้วแสดงให้ติ๊กเลือก ไม่เพิ่มเอง
+- **ไทย** การค้นใช้คลังคำที่บันทึกพร้อมดัชนี การแก้คำศัพท์จึงยังไม่มีผลจนกว่าจะกด **Rebuild / update index** หน้าจะบอกว่ามีการแก้ที่รออยู่ และถ้าสร้างดัชนีล้มเหลว คลังคำเดิมก็ยังอยู่
+- **ไทย** คำถามอย่าง "ทำยังไง" "ยี่ห้อไหน" "ขณะ" ถูกตัดออกจากข้อความที่พิมพ์ก่อนตัดคำ คลังคำจึงไม่เอาไปรวมเป็นคำ
+- **ไทย** การสร้างดัชนีบันทึกดัชนีโดยมีสำเนาในหน่วยความจำน้อยลง ค่าสูงสุดราว 110 MB กับ 3,267 บทความ **หลังอัปเกรดให้กด Rebuild / update index**
+
 ## 0.18.2
 
 - **EN** Fixed: an article that only contains a short word inside a compound is no longer shown for that word. A search for "ยาที่คนท้องไม่ควรกิน" no longer shows the article about vermicelli with curry ("น้ำยา"), because Thai word splitting cuts "น้ำยา" into น้ำ + ยา. New option **Compounds that do not count as their short word** (Options > Search, "น้ำยา" by default): list further compounds (for example ยาสีฟัน, ยาสระผม) separated by commas. Press Rebuild / update index is not needed.

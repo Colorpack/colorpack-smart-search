@@ -85,6 +85,8 @@ $token = Session::getFormToken();
   <div class="ss-tools">
     <div class="ss-card ss-tool"><h3>เปรียบเทียบโหมดการค้น</h3><p class="ss-sub">พิมพ์คำค้นหลายคำ แล้วดูผลปัจจุบันเทียบกับโหมดความแม่นยำ โดยไม่กระทบผู้เข้าชม ควรลองก่อนเปิดโหมดความแม่นยำ</p>
       <a class="btn btn-primary btn-sm align-self-start" href="index.php?option=com_aisearch&amp;view=compare">เปิดหน้าเปรียบเทียบ</a></div>
+    <div class="ss-card ss-tool"><h3>คำศัพท์</h3><p class="ss-sub">บอกระบบว่าคำไหนเป็นคำเดียว เช่น เบาหวาน น้ำยา คนท้อง (ตัวตัดคำภาษาไทยมักตัดแยก) ดูผลการตัดคำได้ทันที มีผลเมื่ออัปเดตดัชนี</p>
+      <a class="btn btn-primary btn-sm align-self-start" href="index.php?option=com_aisearch&amp;view=words">จัดการคำศัพท์</a></div>
     <div class="ss-card ss-tool"><h3>คำพ้อง</h3><p class="ss-sub">จัดการคำที่มีความหมายเหมือนกัน เช่น "นมน้อย" = "น้ำนมไม่พอ" เพิ่ม แก้ ปิดใช้ ค้นหา นำเข้า ส่งออก และทดสอบคำค้นได้</p>
       <a class="btn btn-primary btn-sm align-self-start" href="index.php?option=com_aisearch&amp;view=synonyms">จัดการคำพ้อง</a></div>
     <?php if (Factory::getApplication()->getIdentity()->authorise('core.admin', 'com_aisearch')) : ?>

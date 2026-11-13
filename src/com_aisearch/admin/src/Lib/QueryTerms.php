@@ -16,6 +16,8 @@ final class QueryTerms
     /** Words that only make a sentence a question. */
     private const WORDS = ['ทําไม', 'ทำไม', 'ถึง', 'ไหน', 'กว่า', 'กัน', 'เป็น', 'ตอน', 'จะ', 'ไง', 'ยัง', 'ทํา', 'ทำ', 'อะไร', 'อย่างไร', 'ไหม', 'นะ', 'ค่ะ', 'คะ', 'ครับ', 'ต้อง', 'ควร', 'ดี', 'เมื่อ', 'ให้', 'ขณะ', 'ระหว่าง', 'อยู่'];
     /** Words that are question wording only when followed by another word of the pattern: "แบบ" + "ไหน". */
+    /** Question wording, longest first. It is taken out of the typed text before the words are cut, because a lexicon joins it into words (ทำ+ยัง+ไง -> ทำยังไง). */
+    private const PHRASES = ['ทำอย่างไรดี', 'ทำอย่างไร', 'ทำยังไงดี', 'ทำยังไง', 'ทำไมถึง', 'ทำไม', 'ทําไม', 'ทําไง', 'ทำไง', 'ยี่ห้อไหนดี', 'ยี่ห้อไหน', 'แบบไหนดีกว่ากัน', 'แบบไหนดี', 'แบบไหน', 'ดีกว่ากัน', 'อันไหนดี', 'อันไหน', 'ไหนดี', 'ได้ไหม', 'ได้หรือไม่', 'หรือเปล่า', 'หรือไม่', 'จริงไหม', 'ยังไง', 'อย่างไร', 'อะไรบ้าง', 'อะไร', 'ไหม', 'ขณะ', 'ระหว่าง'];
     private const PAIRS = [['แบบ', 'ไหน'], ['ยี่ห้อ', 'ไหน'], ['อัน', 'ไหน'], ['วิธี', 'ไหน']];
     /** Words that stand next to many other words and are never the second half of a compound (ห้าม, ไม่, ได้, กิน ...). */
     private const NEVER_JOIN = ['ห้าม', 'ไม่', 'ได้', 'มี', 'เป็น', 'กับ', 'แก่', 'แด่', 'ของ', 'ใน', 'จาก', 'ถึง', 'แล้ว', 'จะ', 'ยัง', 'คือ', 'เพื่อ', 'ซึ่ง', 'หรือ', 'และ', 'ก็', 'ให้', 'ต้อง', 'ควร', 'อย่า', 'ช่วย', 'กิน', 'ใช้', 'ทาน', 'ดื่ม', 'รับประทาน'];
@@ -41,6 +43,10 @@ final class QueryTerms
     {
         $tokens = []; $units = []; $terms = []; $df = [];
         foreach (preg_split('/[\s\x{200B}]+/u', trim($q)) ?: [] as $chunk) {
+            $chunk = $this->stripQuestion($chunk);
+            if ($chunk === '') {
+                continue;
+            }
             $raw = $this->fixTypos($this->tk->tokenize($chunk));
             // Words typed together are one word in Thai. If the articles contain this very string, it is a word, however ICU cuts it
             // (คนท้อง -> คน + ท้อง, ท้องเสีย -> ท้อง + เสีย): look for it as a whole instead of its pieces.
@@ -152,6 +158,18 @@ final class QueryTerms
             }
         }
         return $tokens;
+    }
+
+    private function stripQuestion(string $chunk): string
+    {
+        $n = $this->tk->normalize($chunk);
+        foreach (self::PHRASES as $p) {
+            $pn = $this->tk->normalize($p);
+            if (mb_strlen($n) > mb_strlen($pn) || $n === $pn) {
+                $n = str_replace($pn, ' ', $n);
+            }
+        }
+        return trim($n);
     }
 
     /** @param string[] $raw @return bool[] */

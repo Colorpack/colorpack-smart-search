@@ -44,12 +44,48 @@ final class ThaiTokenizer
         }
         $it = self::$iterator ??= \IntlBreakIterator::createWordInstance('th');   // creating it is slow: once per request
         $it->setText($text);
-        $tokens = [];
+        $pieces = []; $breaks = [];
         $start = 0;
         foreach ($it as $end) {
             $piece = trim(substr($text, $start, $end - $start));
             $start = $end;
-            if ($piece === '' || !preg_match('/[\p{L}\p{N}]/u', $piece) || isset($this->stop[$piece])) {
+            if ($piece === '' || !preg_match('/[\p{L}\p{N}]/u', $piece)) {
+                if ($piece !== '') { $pieces[] = $piece; $breaks[] = true; }   // punctuation: a word never reaches across it (not kept)
+                continue;
+            }
+            if (isset($this->stop[$piece])) {
+                $pieces[] = $piece; $breaks[] = true;   // a stop word is dropped, and nothing is joined across it
+                continue;
+            }
+            $pieces[] = $piece; $breaks[] = ctype_digit($piece);
+        }
+        // the site's words put back together (เบา + หวาน -> เบาหวาน), when a lexicon is active
+        if (Lexicon::$active) {
+            $merged = []; $run = [];
+            foreach ($pieces as $i => $piece) {
+                if ($breaks[$i]) {
+                    foreach (Lexicon::$active->merge($run) as $m) { $merged[] = $m; }
+                    $run = [];
+                    $merged[] = "\u{0000}" . $piece;   // marker: kept as it is, filtered below
+                } else {
+                    $run[] = $piece;
+                }
+            }
+            foreach (Lexicon::$active->merge($run) as $m) { $merged[] = $m; }
+            $tokens = [];
+            foreach ($merged as $m) {
+                if ($m[0] === "\u{0000}") {
+                    $p = substr($m, 1);
+                    if (!isset($this->stop[$p]) && preg_match('/[\p{L}\p{N}]/u', $p)) { $tokens[] = $p; }   // a number
+                } else {
+                    $tokens[] = $m;
+                }
+            }
+            return $tokens;
+        }
+        $tokens = [];
+        foreach ($pieces as $i => $piece) {
+            if (isset($this->stop[$piece]) || !preg_match('/[\p{L}\p{N}]/u', $piece)) {
                 continue;
             }
             $tokens[] = $piece;

@@ -19,6 +19,7 @@ final class Indexer
 
     public function __construct(private DatabaseInterface $db, ?Settings $settings = null)
     {
+        Lexicon::boot($db);
         $this->tk = new ThaiTokenizer();
         $this->store = new IndexStore($db);
     }
@@ -43,6 +44,16 @@ final class Indexer
         }
         $this->docsTable = $stage[0];
         $this->textTable = $stage[1];
+        // the words of the site as they are now (files, the Words page, tag and category names): this index is built with them and keeps them
+        // the names of tags and categories are judged against the general words: a name that is two of them joined is a compound worth keeping
+        Lexicon::$active = null;
+        $base = Lexicon::collect($db);
+        Lexicon::$active = new Lexicon($base['words'], $base['split']);
+        try { Lexicon::mineSite($db); } catch (\Throwable $e) { }
+        $base = null;
+        Lexicon::$active = null;
+        $collected = Lexicon::collect($db);
+        Lexicon::$active = new Lexicon($collected['words'], $collected['split']);
         try {
             $bm = new Bm25();
             $total = (int) $db->setQuery('SELECT COUNT(*) FROM ' . $quote('#__content') . ' WHERE state = 1')->loadResult();
@@ -73,6 +84,8 @@ final class Indexer
         } catch (\Throwable $e) {
             $this->docsTable = $live[0];
             $this->textTable = $live[1];
+            Lexicon::$active = null;
+            Lexicon::boot($db);   // back to the lexicon of the index that is still in place
             foreach ($stage as $t) {
                 try { $db->setQuery('DROP TABLE IF EXISTS ' . $quote($t))->execute(); } catch (\Throwable $e2) { }
             }
@@ -81,6 +94,8 @@ final class Indexer
         $this->docsTable = $live[0];
         $this->textTable = $live[1];
         $this->store->save($bm);
+        $bm = null; $tags = null; $fc = null;   // free the index before the word list is saved: the peak of a rebuild is here
+        Lexicon::saveSnapshot($db, $collected);
         return ['docs' => $n, 'seconds' => round(microtime(true) - $t0, 1)];
     }
 

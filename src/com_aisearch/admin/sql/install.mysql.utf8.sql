@@ -76,3 +76,14 @@ CREATE TABLE IF NOT EXISTS `#__aisearch_hits` (
   PRIMARY KEY (`k`),
   KEY `idx_expires` (`expires`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `#__aisearch_words` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `word` varchar(100) NOT NULL,
+  `kind` varchar(5) NOT NULL DEFAULT 'keep',
+  `enabled` tinyint NOT NULL DEFAULT 1,
+  `source` varchar(10) NOT NULL DEFAULT 'manual',
+  `created` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_word_kind` (`word`, `kind`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
