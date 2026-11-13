@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.16.0
+
+- **EN** New option **Searches of one word** (Options > Search, off by default). A one-word search such as "นมแม่" is too short to say what the visitor wants, so articles that only mention the word are noise. With the option on, such a search shows every article whose title has the word, then those whose title has a synonym of it, and nothing else. Choose the order: newest first, or most read first (the Joomla hit counter). If no title has the word, the normal search runs instead of an empty page. Searches of two or more words are not affected.
+- **ไทย** ตัวเลือกใหม่ **การค้นด้วยคำเดียว** (ตัวเลือก > Search ปิดไว้เป็นค่าเริ่มต้น) การค้นด้วยคำเดียว เช่น "นมแม่" สั้นเกินกว่าจะบอกว่าผู้ค้นต้องการอะไร บทความที่แค่เอ่ยถึงคำนี้จึงเป็นสิ่งรบกวน เมื่อเปิด จะแสดงทุกบทความที่ชื่อมีคำนั้น ตามด้วยบทความที่ชื่อมีคำพ้อง และไม่แสดงอย่างอื่น เลือกเรียงได้ว่าใหม่สุดก่อน หรืออ่านมากสุดก่อน (ตัวนับยอดอ่านของ Joomla) ถ้าไม่มีชื่อไหนมีคำนั้น ระบบจะค้นแบบปกติแทนหน้าว่าง การค้นสองคำขึ้นไปไม่ได้รับผลกระทบ
+
 ## 0.15.0
 
 - **EN** **Rules that say what a wish means.** On the Synonyms page, write a rule with `+` between its parts, for example `นมแม่ + เยอะ = เพิ่มน้ำนม, กระตุ้นน้ำนม`. It applies only when the search contains every part. The first part is the topic; the other parts are the wording of the wish, and they are replaced by the words on the right. So "อยากมีนมแม่เยอะ ๆ" is searched as "breast milk" + "increase the milk supply", and an article is no longer ranked first just because its title happens to contain "นมแม่" and "เยอะๆ". The Synonyms page's tester shows which rules fire.
