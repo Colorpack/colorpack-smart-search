@@ -51,6 +51,7 @@ $edit = $this->edit;
           <label class="form-check-label" for="k-set"><strong>กลุ่มคำที่ความหมายเท่ากัน</strong><br><span class="sy-sub">พิมพ์คำไหนก็หาคำอื่นในกลุ่มด้วย (สองทาง) เช่น "ท้องผูก, ถ่ายยาก, อุจจาระแข็ง"</span></label></div>
       </fieldset>
       <div class="mb-2" id="sy-term-row"><label class="form-label" for="sy-term">คำที่คนพิมพ์ (สำหรับแบบคำเดียว)</label>
+        <div class="sy-sub mb-1">ใช้ <code>+</code> เพื่อให้กฎทำงานเมื่อมีครบทุกส่วน เช่น <code>นมแม่ + เยอะ</code> = เพิ่มน้ำนม, กระตุ้นน้ำนม (ความหมาย "อยากมีนมเยอะ")</div>
         <input class="form-control" id="sy-term" name="term" type="text" maxlength="200" value="<?php echo $edit ? $e($edit->term) : ''; ?>"></div>
       <div class="mb-2"><label class="form-label" for="sy-alts"><span id="sy-alts-lbl">คำที่ต้องการให้ค้นเจอด้วย</span> <span class="sy-sub">(คั่นด้วยเครื่องหมายจุลภาค ,)</span></label>
         <textarea class="form-control" id="sy-alts" name="alts" rows="3" required><?php echo $edit ? $e($edit->alts) : ''; ?></textarea></div>

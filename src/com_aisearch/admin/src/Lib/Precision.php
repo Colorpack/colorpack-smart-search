@@ -29,6 +29,8 @@ final class Precision
     /** @param array<string,string[]> $synonyms phrase => alternatives */
     /** @var array<string,int> how many articles keep a joined unit together (for units made of several words) */
     private array $unitDf = [];
+    /** @var array<int,string[]> a wish that a rule turned into alternatives: an article must have any one of them */
+    private array $concepts = [];
 
     public function __construct(
         private DatabaseInterface $db,
@@ -46,9 +48,10 @@ final class Precision
      * @param int[]    $semantic  ids ranked best by the AI similarity (may be kept as "related")
      * @return array{ids:int[],info:array<int,array<string,mixed>>,hidden:int,plan:array<string,mixed>}
      */
-    public function apply(array $tokens, array $ids, array $semantic = [], array $unitDf = []): array
+    public function apply(array $tokens, array $ids, array $semantic = [], array $unitDf = [], array $concepts = []): array
     {
         $this->unitDf = $unitDf;
+        $this->concepts = $concepts;
         $plan = $this->plan($tokens);
         if (!$ids || (!$plan['phrases'] && !$plan['core'])) {
             return ['ids' => $ids, 'info' => [], 'hidden' => 0, 'plan' => $plan];
@@ -124,6 +127,9 @@ final class Precision
             $ctx = [];
         }
         $core = array_values(array_filter($core, static fn ($w) => !in_array($w, self::FILLER, true) && $w !== 'ๆ'));
+        foreach ($this->concepts as $i => $alts) {
+            $core[] = '§' . $i;   // stands for the alternatives of a rule such as "นมแม่ + เยอะ"
+        }
         return ['phrases' => $phrases, 'core' => $core, 'context' => $ctx];
     }
 
@@ -159,6 +165,9 @@ final class Precision
     private function formsOf(string $word): array
     {
         if (!isset($this->forms[$word])) {
+            if (str_starts_with($word, '§')) {
+                return $this->forms[$word] = array_values(array_filter(array_map(fn ($a) => $this->tk->normalize((string) $a), $this->concepts[(int) substr($word, 1)] ?? []), static fn ($x) => $x !== ''));
+            }
             $f = [$word];
             foreach ($this->synonyms as $key => $alts) {
                 if (mb_strpos($this->tk->normalize($key), $word) !== false) {

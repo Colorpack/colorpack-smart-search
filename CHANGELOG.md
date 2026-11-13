@@ -1,5 +1,12 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.15.0
+
+- **EN** **Rules that say what a wish means.** On the Synonyms page, write a rule with `+` between its parts, for example `นมแม่ + เยอะ = เพิ่มน้ำนม, กระตุ้นน้ำนม`. It applies only when the search contains every part. The first part is the topic; the other parts are the wording of the wish, and they are replaced by the words on the right. So "อยากมีนมแม่เยอะ ๆ" is searched as "breast milk" + "increase the milk supply", and an article is no longer ranked first just because its title happens to contain "นมแม่" and "เยอะๆ". The Synonyms page's tester shows which rules fire.
+- **EN** Only the rules that apply to the search are used when the precision mode checks an article, instead of every rule that merely contains one of its words.
+- **ไทย** **กฎที่บอกว่าความต้องการหมายถึงอะไร** ในหน้าคำพ้อง เขียนกฎโดยคั่นส่วนต่าง ๆ ด้วย `+` เช่น `นมแม่ + เยอะ = เพิ่มน้ำนม, กระตุ้นน้ำนม` กฎจะทำงานเมื่อคำค้นมีครบทุกส่วน ส่วนแรกคือหัวข้อ ส่วนที่เหลือคือถ้อยคำของความต้องการ ซึ่งจะถูกแทนด้วยคำทางขวา "อยากมีนมแม่เยอะ ๆ" จึงถูกค้นเป็น "นมแม่" + "เพิ่มน้ำนม" และบทความจะไม่ขึ้นที่หนึ่งเพียงเพราะชื่อบังเอิญมีคำว่า "นมแม่" กับ "เยอะๆ" ช่องทดสอบในหน้าคำพ้องแสดงว่ากฎข้อไหนทำงาน
+- **ไทย** โหมดความแม่นยำใช้เฉพาะกฎที่ตรงกับคำค้นนั้น ไม่ใช่ทุกกฎที่บังเอิญมีคำใดคำหนึ่งอยู่ในนั้น
+
 ## 0.14.0
 
 - **EN** **Compound words are now recognised.** Thai word splitting cuts many everyday words into pieces (เบาหวาน becomes เบา + หวาน, อาบน้ำ becomes อา + บน้ำ), so an article about desserts could be found for "diabetes". The index now also keeps every pair of neighbouring words, and a search treats words typed together as one unit when the articles keep them together too. This is judged from your own articles, so no word list has to be kept by hand. **Press Rebuild / update index once after upgrading**; until then the search behaves as before.

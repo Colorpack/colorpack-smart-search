@@ -185,6 +185,25 @@ final class SynonymStore
         return ['total' => (int) ($r->n ?? 0), 'on' => (int) ($r->e ?? 0), 'ai' => (int) ($r->a ?? 0)];
     }
 
+    /**
+     * Does this rule apply to the search? A plain rule applies when the search contains its phrase.
+     * A rule written with "+" applies only when the search contains every part ("นมแม่ + เยอะ"), which lets a rule
+     * say what a wish means ("want a lot of milk" -> "increase the milk supply") without touching the words alone.
+     */
+    public static function fires(string $key, string $normalizedQuery, ThaiTokenizer $tk): bool
+    {
+        $parts = array_filter(array_map(static fn ($p) => $tk->normalize(trim($p)), explode('+', $key)), static fn ($p) => $p !== '');
+        if (!$parts) {
+            return false;
+        }
+        foreach ($parts as $p) {
+            if (mb_strpos($normalizedQuery, $p) === false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** The same key for the same group of words, whatever the order or the spacing. */
     public static function setKey(ThaiTokenizer $tk, array $words): string
     {
@@ -284,8 +303,7 @@ final class SynonymStore
             $alts = self::split((string) $r->alts);
             $keys = $r->kind === 'set' ? $alts : [(string) $r->term];
             foreach ($keys as $k) {
-                $kn = $this->tk->normalize($k);
-                if ($kn !== '' && mb_strpos($qn, $kn) !== false) {
+                if ($k !== '' && self::fires($k, $qn, $this->tk)) {
                     $add = $r->kind === 'set' ? array_values(array_filter($alts, static fn ($x) => $x !== $k)) : $alts;
                     $rules[] = ['id' => (int) $r->id, 'kind' => (string) $r->kind, 'term' => $r->kind === 'set' ? $k : (string) $r->term, 'alts' => implode(', ', $add), 'enabled' => (int) $r->enabled === 1];
                     if ((int) $r->enabled === 1) {
@@ -319,11 +337,11 @@ final class SynonymStore
         $out = [];
         foreach ($rows as $r) {
             $keys = $r->kind === 'set' ? self::split((string) $r->alts) : [(string) $r->term];
-            $keys = array_filter(array_map(fn ($k) => $this->tk->normalize($k), $keys));
+            $keys = array_filter($keys, static fn ($k) => trim((string) $k) !== '');
             $n = 0;
             foreach ($norm as [$q, $c]) {
                 foreach ($keys as $k) {
-                    if (mb_strpos($q, $k) !== false) { $n += $c; break; }
+                    if (self::fires((string) $k, $q, $this->tk)) { $n += $c; break; }
                 }
             }
             $out[(int) $r->id] = $n;

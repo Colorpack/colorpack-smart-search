@@ -116,15 +116,38 @@ final class SearchService
         $tokens = $qt['tokens'];   // the words that are left once question wording is dropped
         $units = $qt['units'];     // the same with compounds joined (เบา + หวาน -> เบาหวาน)
         $expanded = [];
+        $fired = [];   // only the rules that apply to this search
         foreach ($this->synonyms() as $key => $alts) {
-            if (mb_strpos($qn, $tk->normalize($key)) !== false) {
+            if (SynonymStore::fires((string) $key, $qn, $tk)) {
+                $fired[$key] = $alts;
                 array_push($expanded, ...$alts);
             }
         }
+        // a rule written "A + B = alternatives" says what a wish means: the first part is the topic, the other parts are the
+        // wording of the wish ("นมแม่ + เยอะ" = "เพิ่มน้ำนม"). The wording is then replaced by the alternatives, so an article is not
+        // ranked high just because it happens to contain the words "เยอะ" or "อยาก" (a title about sweet milk with "เยอะๆ").
+        $concepts = [];
+        $terms = $qt['terms'];
+        foreach ($fired as $key => $alts) {
+            if (!str_contains((string) $key, '+')) {
+                continue;
+            }
+            $parts = array_values(array_filter(array_map(static fn ($p) => trim($p), explode('+', (string) $key)), static fn ($p) => $p !== ''));
+            foreach (array_slice($parts, 1) as $mod) {
+                $mn = $tk->normalize($mod);
+                $units = array_values(array_filter($units, static fn ($u) => $u !== $mn));
+                foreach ($tk->tokenize($mod) as $mt) {
+                    $at = array_search($mt, $terms, true);
+                    if ($at !== false) { unset($terms[$at]); }
+                }
+            }
+            $concepts[] = $alts;
+        }
+        $terms = array_values($terms);
         // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
         $usePrecision = $precision ?? $this->settings->precisionMode();
         $depth = $usePrecision ? 800 : 100;
-        $rankings = [$bm->search($qt['terms'], $depth)];
+        $rankings = [$bm->search($terms ?: $qt['terms'], $depth)];
         $weights = [1.0];
         if ($expanded) {
             $expTerms = [];
@@ -148,8 +171,8 @@ final class SearchService
         $info = [];
         $hidden = 0;
         if ($usePrecision) {
-            $pr = (new Precision($this->db, $tk, $bm, $this->synonyms(), $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
-                ->apply($units, $fused, array_keys($vec), $qt['df']);
+            $pr = (new Precision($this->db, $tk, $bm, $fired, $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
+                ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
             $fused = $pr['ids'];
             $info = $pr['info'];
             $hidden = $pr['hidden'];
