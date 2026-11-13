@@ -125,10 +125,10 @@ final class Bm25
         return false;
     }
 
-    /** @var array<string,array<int,true>> posting lists already unpacked in this request (never saved with the index) */
+    /** @var array<string,array<int,int>> posting lists already unpacked in this request (never saved with the index) */
     private static array $idCache = [];
 
-    /** The articles that contain this word as a word of its own (not as a piece of a longer word). @return array<int,true> */
+    /** The articles that contain this word as a word of its own (not as a piece of a longer word), with how many times (the title and tags count more than once). @return array<int,int> id => count */
     public function docsOf(string $term): array
     {
         $key = spl_object_id($this) . '|' . $term;
@@ -138,10 +138,10 @@ final class Bm25
         $p = $this->postings[$term] ?? null;
         $ids = [];
         if (is_array($p)) {
-            foreach ($p as $id => $_) { $ids[(int) $id] = true; }
+            foreach ($p as $id => $tf) { $ids[(int) $id] = (int) $tf; }
         } elseif (is_string($p) && $p !== '') {
             $u = unpack('N*', $p);
-            for ($i = 1, $c = count($u); $i < $c; $i += 2) { $ids[$u[$i]] = true; }
+            for ($i = 1, $c = count($u); $i < $c; $i += 2) { $ids[$u[$i]] = $u[$i + 1]; }
         }
         return self::$idCache[$key] = $ids;
     }

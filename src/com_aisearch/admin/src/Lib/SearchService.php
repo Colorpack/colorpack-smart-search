@@ -305,8 +305,10 @@ final class SearchService
             $info = [];
             $hidden = 0;
             if ($usePrecision) {
-                $pr = (new Precision($this->db, $tk, $bm, array_filter($fired, static fn ($k) => !str_contains((string) $k, '+'), ARRAY_FILTER_USE_KEY), $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
-                    ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
+                $prec = new Precision($this->db, $tk, $bm, array_filter($fired, static fn ($k) => !str_contains((string) $k, '+'), ARRAY_FILTER_USE_KEY), $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic());
+            $prec->setShortExcludes($this->settings->shortExclude());
+            $pr = $prec
+                ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
                 $fused = $pr['ids'];
                 $info = $pr['info'];
                 $hidden = $pr['hidden'];

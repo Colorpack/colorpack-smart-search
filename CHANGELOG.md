@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.18.2
+
+- **EN** Fixed: an article that only contains a short word inside a compound is no longer shown for that word. A search for "ยาที่คนท้องไม่ควรกิน" no longer shows the article about vermicelli with curry ("น้ำยา"), because Thai word splitting cuts "น้ำยา" into น้ำ + ยา. New option **Compounds that do not count as their short word** (Options > Search, "น้ำยา" by default): list further compounds (for example ยาสีฟัน, ยาสระผม) separated by commas. Press Rebuild / update index is not needed.
+- **ไทย** แก้: บทความที่มีคำสั้นอยู่ในคำประสมเท่านั้น จะไม่ถูกแสดงสำหรับคำสั้นนั้นอีก การค้น "ยาที่คนท้องไม่ควรกิน" จะไม่แสดงบทความขนมจีนน้ำยา ("น้ำยา") เพราะการตัดคำไทยตัด "น้ำยา" เป็น น้ำ + ยา ตัวเลือกใหม่ **คำประสมที่ไม่นับเป็นคำสั้นของมัน** (ตัวเลือก > Search ค่าเริ่มต้น "น้ำยา") ใส่คำประสมอื่นเพิ่มได้ (เช่น ยาสีฟัน ยาสระผม) คั่นด้วยจุลภาค ไม่ต้อง Rebuild ดัชนี
+
 ## 0.18.1
 
 - **EN** Improved: a short Thai word such as "ยา" was found inside longer words ("น้ำยา", "ขนมจีนน้ำยา"), so a search for medicine returned an article about vermicelli with curry in second place. A word of up to three letters now has to be a word of its own in the article (the index knows the words ICU found; titles, tags and descriptions are cut into words on the spot). This is not perfect: ICU itself cuts "น้ำยา" into น้ำ + ยา, so such an article still appears, but far down (19th instead of 2nd in the test).

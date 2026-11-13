@@ -4,7 +4,7 @@
     <packagename>aisearch</packagename>
     <author>Colorpack</author>
     <creationDate>2026-11</creationDate>
-    <version>0.18.1</version>
+    <version>0.18.2</version>
     <description>Thai-aware keyword search for Joomla: word segmentation, ranking and synonyms. No external services, no API keys. / ระบบค้นหาภาษาไทยสำหรับ Joomla: ตัดคำไทย จัดอันดับผล และคำพ้อง ไม่ใช้บริการภายนอก ไม่ต้องมี API key</description>
     <scriptfile>pkg_script.php</scriptfile>
     <files>

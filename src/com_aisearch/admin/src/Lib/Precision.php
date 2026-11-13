@@ -35,6 +35,8 @@ final class Precision
     private int $curId = 0;
     /** @var array<string,string[]> */
     private array $segCache = [];
+    /** @var string[] compounds that do not count as the short word they contain */
+    private array $excludes = [];
 
     public function __construct(
         private DatabaseInterface $db,
@@ -52,6 +54,12 @@ final class Precision
      * @param int[]    $semantic  ids ranked best by the AI similarity (may be kept as "related")
      * @return array{ids:int[],info:array<int,array<string,mixed>>,hidden:int,plan:array<string,mixed>}
      */
+    /** @param string[] $compounds */
+    public function setShortExcludes(array $compounds): void
+    {
+        $this->excludes = array_map(fn ($c) => $this->tk->normalize((string) $c), $compounds);
+    }
+
     public function apply(array $tokens, array $ids, array $semantic = [], array $unitDf = [], array $concepts = []): array
     {
         $this->unitDf = $unitDf;
@@ -230,6 +238,18 @@ final class Precision
         return false;
     }
 
+    /** How many times the short word stands as a word of its own in the article: the index count, less the compounds that only contain it. */
+    private function shortCount(string $text, string $w): int
+    {
+        $n = $this->bm->docsOf($w)[$this->curId] ?? 0;
+        foreach ($this->excludes as $ex) {
+            if ($ex !== '' && mb_strpos($ex, $w) !== false) {
+                $n -= mb_substr_count($text, $ex) * mb_substr_count($ex, $w);
+            }
+        }
+        return max(0, $n);
+    }
+
     /** A Thai word of up to three letters (ยา, นม, ไม่, ลูก) is often a piece of a longer one (น้ำยา, นมัสการ, ลูกชิ้น). */
     private function isShort(string $w): bool
     {
@@ -243,7 +263,7 @@ final class Precision
     private function hasShort(string $text, string $w): bool
     {
         if (mb_strlen($text) > 700 && $this->curId > 0) {
-            return isset($this->bm->docsOf($w)[$this->curId]);
+            return $this->shortCount($text, $w) > 0;
         }
         $k = md5($text);
         $this->segCache[$k] ??= $this->tk->tokenize($text);
@@ -470,7 +490,11 @@ final class Precision
             if ($first === false) {
                 continue;
             }
-            if ($first < 400 || mb_substr_count($body, $w) >= 2) {
+            $count = $this->isShort($w) && $this->curId > 0 ? $this->shortCount($body, $w) : mb_substr_count($body, $w);
+            if ($this->isShort($w) && $this->curId > 0 && $count === 0) {
+                continue;   // only inside a compound such as น้ำยา: not mentioned at all
+            }
+            if ($first < 400 || $count >= 2) {
                 continue;
             }
             return false;
