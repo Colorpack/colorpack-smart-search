@@ -178,7 +178,16 @@ final class SearchService
         }
         $tk = new ThaiTokenizer();
         $qn = $tk->normalize($q);
-        $qt = (new QueryTerms($tk, $bm))->analyse($q);
+        $db = $this->db;
+        $known = static function (string $w) use ($db): bool {   // does any article contain this string?
+            try {
+                $e = $db->escape($w, true);
+                return (int) $db->setQuery('SELECT COUNT(*) FROM (SELECT d.id FROM ' . $db->quoteName('#__aisearch_docs') . ' d LEFT JOIN ' . $db->quoteName('#__aisearch_text') . " t ON t.id = d.id WHERE d.title LIKE '%" . $e . "%' OR t.body LIKE '%" . $e . "%' LIMIT 3) x")->loadResult() >= 3;
+            } catch (\Throwable $e2) {
+                return false;
+            }
+        };
+        $qt = (new QueryTerms($tk, $bm, $known))->analyse($q);
         $tokens = $qt['tokens'];   // the words that are left once question wording is dropped
         $units = $qt['units'];     // the same with compounds joined (เบา + หวาน -> เบาหวาน)
         $expanded = [];

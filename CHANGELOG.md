@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.16.1
+
+- **EN** Fixed: a search such as "คนท้อง ท้องเสีย" returned articles that had only one of the two words (for example an article about children's upset stomach, or one about constipation in pregnancy). ICU cuts คนท้อง into คน + ท้อง and ท้องเสีย into ท้อง + เสีย, and the old rule for joining pieces was too strict for pieces such as "ท้อง" that appear in many other words. Now a word typed together is looked up as a whole in the articles, so "คนท้อง" and "ท้องเสีย" are two words that an article must have (or a synonym of them) to be shown in the precision mode. Among articles that only discuss the words in the text, the one that says them more often now comes first.
+- **ไทย** แก้: การค้นอย่าง "คนท้อง ท้องเสีย" เคยได้บทความที่มีคำเพียงคำเดียวจากสองคำ (เช่น เรื่องท้องเสียในเด็ก หรือเรื่องท้องผูกของคนท้อง) เพราะ ICU ตัด คนท้อง เป็น คน + ท้อง และ ท้องเสีย เป็น ท้อง + เสีย และกฎเดิมที่รวมชิ้นส่วนเข้าด้วยกันเข้มเกินไปสำหรับชิ้นอย่าง "ท้อง" ที่อยู่ในคำอื่นมากมาย ตอนนี้คำที่พิมพ์ติดกันจะถูกค้นหาทั้งคำในบทความ "คนท้อง" กับ "ท้องเสีย" จึงเป็นสองคำที่บทความต้องมีครบ (หรือมีคำพ้อง) จึงจะแสดงในโหมดความแม่นยำ และในกลุ่มบทความที่แค่กล่าวถึงคำในเนื้อหา เรื่องที่พูดถึงคำเหล่านั้นบ่อยกว่าจะขึ้นก่อน
+
 ## 0.16.0
 
 - **EN** New option **Searches of one word** (Options > Search, off by default). A one-word search such as "นมแม่" is too short to say what the visitor wants, so articles that only mention the word are noise. With the option on, such a search shows every article whose title has the word, then those whose title has a synonym of it, and nothing else. Choose the order: newest first, or most read first (the Joomla hit counter). If no title has the word, the normal search runs instead of an empty page. Searches of two or more words are not affected.

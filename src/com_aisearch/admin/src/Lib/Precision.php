@@ -70,9 +70,20 @@ final class Precision
                 $tier = $this->maxTier + 1;
                 $why = 'ai-similar';
             }
-            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx]];
+            // among articles that only discuss the words in the text, the one that says them most comes first
+            $dens = 0;
+            if ($tier >= 3 && $tier < 9) {
+                foreach ($plan['core'] as $w) {
+                    $best = 0;
+                    foreach ($this->formsOf($w) as $f) {
+                        $best = max($best, mb_substr_count($t['title'] . ' ' . $t['body'], $f));
+                    }
+                    $dens += min(5, $best);
+                }
+            }
+            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx], $dens];
         }
-        usort($rows, static fn ($a, $b) => [$a[1], -$a[2], $a[3]] <=> [$b[1], -$b[2], $b[3]]);
+        usort($rows, static fn ($a, $b) => [$a[1], -$a[2], -($a[5] ?? 0), $a[3]] <=> [$b[1], -$b[2], -($b[5] ?? 0), $b[3]]);
         $out = []; $info = []; $hidden = 0;
         foreach ($rows as [$id, $tier, , , $inf]) {
             if ($tier <= $this->maxTier + ($this->keepSemantic > 0 ? 1 : 0) && $tier < 9) {

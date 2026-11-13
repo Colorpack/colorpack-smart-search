@@ -19,7 +19,8 @@ final class QueryTerms
     private const PAIRS = [['แบบ', 'ไหน'], ['ยี่ห้อ', 'ไหน'], ['อัน', 'ไหน'], ['วิธี', 'ไหน']];
     private const KEEP_APART = ['เดือน', 'ขวบ', 'ปี', 'สัปดาห์', 'อาทิตย์', 'วัน', 'month', 'months', 'year', 'years', 'week', 'weeks', 'day', 'days'];
 
-    public function __construct(private ThaiTokenizer $tk, private Bm25 $bm) {}
+    /** @param ?\Closure $known function(string): bool, is this string a word that the articles themselves contain? */
+    public function __construct(private ThaiTokenizer $tk, private Bm25 $bm, private ?\Closure $known = null) {}
 
     /**
      * @return array{tokens:string[],units:string[],terms:string[],df:array<string,int>}
@@ -30,6 +31,21 @@ final class QueryTerms
         $tokens = []; $units = []; $terms = []; $df = [];
         foreach (preg_split('/[\s\x{200B}]+/u', trim($q)) ?: [] as $chunk) {
             $raw = $this->tk->tokenize($chunk);
+            // Words typed together are one word in Thai. If the articles contain this very string, it is a word, however ICU cuts it
+            // (คนท้อง -> คน + ท้อง, ท้องเสีย -> ท้อง + เสีย): look for it as a whole instead of its pieces.
+            $whole = $this->tk->normalize($chunk);
+            if ($this->known && count($raw) >= 2 && mb_strlen($whole) >= 4 && mb_strlen($whole) <= 24 && !array_intersect($raw, self::WORDS) && ($this->known)($whole)) {
+                $dfv = PHP_INT_MAX;
+                for ($i = 1, $n = count($raw); $i < $n; $i++) {
+                    $pair = $raw[$i - 1] . ThaiTokenizer::JOIN . $raw[$i];
+                    $terms[] = $pair;
+                    $dfv = min($dfv, $this->bm->docFreq($pair));
+                }
+                foreach ($raw as $t) { $tokens[] = $t; $terms[] = $t; }
+                $units[] = $whole;
+                $df[$whole] = $dfv;
+                continue;
+            }
             $drop = $this->dropMask($raw);
             $run = [];
             foreach ($raw as $i => $t) {
