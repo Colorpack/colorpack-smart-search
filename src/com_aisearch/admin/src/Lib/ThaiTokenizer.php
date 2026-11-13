@@ -54,4 +54,21 @@ final class ThaiTokenizer
         }
         return $tokens;
     }
+
+    /** Joins two neighbouring words into one index term. Used to tell a compound ("เบา" + "หวาน") from the same words far apart. */
+    public const JOIN = "\u{00B7}";
+
+    /**
+     * The tokens plus one extra term for every pair of neighbours. ICU splits many Thai compounds into pieces
+     * (เบาหวาน -> เบา, หวาน), so the pair term is what lets the search see that the pieces stood together.
+     * @param string[] $tokens @return string[]
+     */
+    public static function withPairs(array $tokens): array
+    {
+        $out = $tokens;
+        for ($i = 0, $n = count($tokens) - 1; $i < $n; $i++) {
+            $out[] = $tokens[$i] . self::JOIN . $tokens[$i + 1];
+        }
+        return $out;
+    }
 }

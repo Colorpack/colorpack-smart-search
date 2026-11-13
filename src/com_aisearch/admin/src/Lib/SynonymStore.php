@@ -185,6 +185,14 @@ final class SynonymStore
         return ['total' => (int) ($r->n ?? 0), 'on' => (int) ($r->e ?? 0), 'ai' => (int) ($r->a ?? 0)];
     }
 
+    /** The same key for the same group of words, whatever the order or the spacing. */
+    public static function setKey(ThaiTokenizer $tk, array $words): string
+    {
+        $n = array_map(static fn ($x) => $tk->normalize((string) $x), $words);
+        sort($n);
+        return implode('|', $n);
+    }
+
     /**
      * Adds or edits a rule. A one-way rule for a phrase that already has one is merged into it (no duplicates).
      * @return array{ok:bool,id:int,message:string}
@@ -212,7 +220,7 @@ final class SynonymStore
             }
         }
         if ($id === 0 && $kind === 'set') {
-            $key = static fn (array $l) => implode('|', array_map(fn ($x) => $x, (function ($a) { sort($a); return $a; })(array_map(fn ($x) => $this->tk->normalize($x), $l))));
+            $key = fn (array $l) => self::setKey($this->tk, $l);
             foreach ($this->db->setQuery('SELECT id, alts FROM ' . $this->t() . ' WHERE kind = ' . $this->db->quote('set'))->loadObjectList() ?: [] as $r) {
                 if ($key(self::split((string) $r->alts)) === $key($list)) {
                     return ['ok' => false, 'id' => (int) $r->id, 'message' => 'มีกลุ่มคำนี้อยู่แล้ว (กฎ #' . (int) $r->id . ')'];

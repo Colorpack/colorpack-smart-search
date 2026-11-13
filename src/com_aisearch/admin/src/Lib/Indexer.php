@@ -197,13 +197,14 @@ final class Indexer
     {
         $tags = array_values(array_unique($tags));
         $body = TextCleaner::clean($r->introtext . ' ' . $r->fulltext);
-        $tt = $this->tk->tokenize($r->title);
-        $tg = $this->tk->tokenize(implode(' ', $tags));
+        // every field also indexes its neighbouring word pairs, so a compound like เบาหวาน (which ICU splits into เบา + หวาน) can be told apart from the two words far apart
+        $tt = ThaiTokenizer::withPairs($this->tk->tokenize($r->title));
+        $tg = ThaiTokenizer::withPairs($this->tk->tokenize(implode(' ', $tags)));
         $keys = $this->keywords((string) ($r->metakey ?? ''));   // the editor's own Meta Keywords: weighted like tags
-        $kt = $this->tk->tokenize($keys);
+        $kt = ThaiTokenizer::withPairs($this->tk->tokenize($keys));
         $bm->add((int) $r->id, array_merge($tt, $tt, $tt, $tg, $tg, $kt, $kt,
-            $this->tk->tokenize(($r->category ?? '') . ' ' . $r->metadesc),
-            $this->tk->tokenize(mb_substr($body, 0, 6000))));
+            ThaiTokenizer::withPairs($this->tk->tokenize(($r->category ?? '') . ' ' . $r->metadesc)),
+            ThaiTokenizer::withPairs($this->tk->tokenize(mb_substr($body, 0, 6000)))));
         $snippet = trim((string) $r->metadesc) !== '' ? $r->metadesc : preg_replace('/\s+/u', ' ', $body);
         [$image, $kind] = $this->pickImage($r, $fc);
         $row = (object) [

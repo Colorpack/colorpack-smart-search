@@ -46,6 +46,15 @@ final class Settings
     public function searchPerMinute(): int { return max(0, min(10000, (int) $this->p->get('rl_search_per_min', 90))); }
     /** a server variable that carries the real visitor address behind a proxy, for example HTTP_CF_CONNECTING_IP; empty = use the connection's address */
     public function trustIpHeader(): string { $v = strtoupper(trim((string) $this->p->get('trust_ip_header', ''))); return preg_match('/^HTTP_[A-Z0-9_]+$/', $v) ? $v : ''; }
+    /** categories and single articles that never appear in search results (pages such as Cookies, Contact, Homepage) */
+    public function excludeCats(): array { return $this->ids($this->p->get('exclude_cats', [])); }
+    public function excludeIds(): array { return $this->ids($this->p->get('exclude_ids', '')); }
+    /** @return int[] */
+    private function ids($v): array
+    {
+        $parts = is_array($v) ? $v : (preg_split('/[\s,;]+/', (string) $v) ?: []);
+        return array_values(array_unique(array_filter(array_map('intval', $parts), static fn ($i) => $i > 0)));
+    }
     public function clickLearning(): bool { return (int) $this->p->get('click_learning', 1) === 1; }
     public function clickMin(): int { return max(1, min(50, (int) $this->p->get('click_min', 3))); }
     public function maxResults(): int { return max(20, min(300, (int) $this->p->get('max_results', 100))); }

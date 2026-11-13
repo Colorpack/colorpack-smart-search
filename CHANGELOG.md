@@ -1,5 +1,16 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.14.0
+
+- **EN** **Compound words are now recognised.** Thai word splitting cuts many everyday words into pieces (เบาหวาน becomes เบา + หวาน, อาบน้ำ becomes อา + บน้ำ), so an article about desserts could be found for "diabetes". The index now also keeps every pair of neighbouring words, and a search treats words typed together as one unit when the articles keep them together too. This is judged from your own articles, so no word list has to be kept by hand. **Press Rebuild / update index once after upgrading**; until then the search behaves as before.
+- **EN** **Question wording is ignored**: "ทำไมถึง", "แบบไหน", "ยี่ห้อไหน", "ทำยังไง" and the like no longer count as topic words, so a long question such as "ทำไมถึงเป็นเบาหวานตอนท้อง" is searched by its topic (เบาหวาน, ท้อง). A search made only of such words finds nothing instead of a hundred random articles. In the precision mode, a question with four or more topic words now needs most of them, not all.
+- **EN** New options **Categories left out of search** and **Articles left out of search** (Options > Search) for pages that are not content, such as Cookies, Privacy Policy, Contact or the Homepage. They are checked at search time and also hide those pages from the search-box suggestions.
+- **EN** Fixed: adding a second group of equal words on the Synonyms page, or importing one, could stop with an error since 0.12.0. A group that already exists in another order is now refused with a message.
+- **ไทย** **รู้จักคำประสมแล้ว** การตัดคำภาษาไทยตัดคำที่ใช้บ่อยออกเป็นชิ้น (เบาหวาน กลายเป็น เบา + หวาน, อาบน้ำ กลายเป็น อา + บน้ำ) ทำให้บทความเรื่องของหวานอาจโผล่เมื่อค้น "เบาหวาน" ตอนนี้ดัชนีเก็บคู่คำที่อยู่ติดกันด้วย และการค้นมองคำที่พิมพ์ติดกันเป็นหน่วยเดียวเมื่อบทความก็ใช้คำนั้นติดกัน ตัดสินจากบทความของเว็บเอง ไม่ต้องดูแลรายการคำเอง **หลังอัปเกรดให้กด Rebuild / update index หนึ่งครั้ง** ก่อนหน้านั้นการค้นทำงานเหมือนเดิม
+- **ไทย** **ไม่นับคำถามเป็นหัวข้อ** คำอย่าง "ทำไมถึง" "แบบไหน" "ยี่ห้อไหน" "ทำยังไง" ไม่ถูกนับเป็นคำค้นหลัก ประโยคยาว เช่น "ทำไมถึงเป็นเบาหวานตอนท้อง" จึงค้นด้วยหัวข้อ (เบาหวาน ท้อง) คำค้นที่มีแต่คำแบบนี้จะไม่พบอะไร แทนที่จะได้บทความสุ่มร้อยเรื่อง ในโหมดความแม่นยำ คำถามที่มีคำหัวข้อตั้งแต่ 4 คำขึ้นไปต้องมีคำส่วนใหญ่ ไม่ต้องครบ
+- **ไทย** เพิ่มตัวเลือก **หมวดที่ไม่นำมาค้น** และ **บทความที่ไม่นำมาค้น** (ตัวเลือก > Search) สำหรับหน้าที่ไม่ใช่เนื้อหา เช่น Cookies, Privacy Policy, ติดต่อ หรือ Homepage ตรวจตอนค้น และซ่อนหน้าเหล่านั้นจากคำแนะนำในช่องค้นหาด้วย
+- **ไทย** แก้: ตั้งแต่ 0.12.0 การเพิ่มกลุ่มคำความหมายเท่ากันกลุ่มที่สองในหน้าคำพ้อง หรือนำเข้า อาจหยุดด้วยข้อผิดพลาด ตอนนี้กลุ่มที่มีอยู่แล้ว (แม้เรียงต่างกัน) จะถูกปฏิเสธพร้อมข้อความ
+
 ## 0.13.0
 
 - **EN** **Protection** (new Options tab). A visitor who searches more than 90 times a minute sees a short "please wait" notice instead of results (the limit is changeable, 0 turns it off); the search-box suggestions and the click counter have their own limits too. Counters use a hash of the visitor's address, never the address itself, and any failure lets the visitor through, so the protection cannot take the search down. If the site is behind a proxy such as Cloudflare, name the header that carries the real address (Options > Protection). The upgrade adds one small table.

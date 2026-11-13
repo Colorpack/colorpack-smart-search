@@ -43,6 +43,12 @@ final class SearchService
             . ' AND ' . $db->quoteName('access') . ' IN (' . $in . ')'
             . ' AND ' . $db->quoteName('catid') . ' IN (SELECT c.id FROM ' . $cat . " c WHERE c.extension = 'com_content' AND c.published = 1 AND c.access IN (" . $in . ')'
             . ' AND NOT EXISTS (SELECT 1 FROM ' . $cat . " p WHERE p.extension = 'com_content' AND p.lft < c.lft AND p.rgt > c.rgt AND (p.published <> 1 OR p.access NOT IN (" . $in . '))))';
+        if ($ex = $this->settings->excludeCats()) {
+            $where .= ' AND ' . $db->quoteName('catid') . ' NOT IN (' . implode(',', $ex) . ')';
+        }
+        if ($ex = $this->settings->excludeIds()) {
+            $where .= ' AND ' . $db->quoteName('id') . ' NOT IN (' . implode(',', $ex) . ')';
+        }
         try {   // a multilingual site: only articles in this language (or in all languages)
             if (\Joomla\CMS\Language\Multilanguage::isEnabled()) {
                 $where .= ' AND ' . $db->quoteName('lang') . ' IN (' . $db->quote('*') . ', ' . $db->quote(\Joomla\CMS\Factory::getApplication()->getLanguage()->getTag()) . ')';
@@ -106,7 +112,9 @@ final class SearchService
         }
         $tk = new ThaiTokenizer();
         $qn = $tk->normalize($q);
-        $tokens = array_values(array_diff($tk->tokenize($q), self::QUERY_STOP));
+        $qt = (new QueryTerms($tk, $bm))->analyse($q);
+        $tokens = $qt['tokens'];   // the words that are left once question wording is dropped
+        $units = $qt['units'];     // the same with compounds joined (เบา + หวาน -> เบาหวาน)
         $expanded = [];
         foreach ($this->synonyms() as $key => $alts) {
             if (mb_strpos($qn, $tk->normalize($key)) !== false) {
@@ -116,10 +124,14 @@ final class SearchService
         // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
         $usePrecision = $precision ?? $this->settings->precisionMode();
         $depth = $usePrecision ? 800 : 100;
-        $rankings = [$bm->search($tokens, $depth)];
+        $rankings = [$bm->search($qt['terms'], $depth)];
         $weights = [1.0];
         if ($expanded) {
-            $rankings[] = $bm->search($tk->tokenize(implode(' ', $expanded)), $depth);
+            $expTerms = [];
+            foreach ($expanded as $alt) {   // each synonym is a phrase of its own: its words and its neighbouring pairs
+                $expTerms = array_merge($expTerms, ThaiTokenizer::withPairs($tk->tokenize($alt)));
+            }
+            $rankings[] = $bm->search($expTerms, $depth);
             $weights[] = 0.5;
         }
         $mode = 'keyword';
@@ -137,7 +149,7 @@ final class SearchService
         $hidden = 0;
         if ($usePrecision) {
             $pr = (new Precision($this->db, $tk, $bm, $this->synonyms(), $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
-                ->apply($tokens, $fused, array_keys($vec));
+                ->apply($units, $fused, array_keys($vec), $qt['df']);
             $fused = $pr['ids'];
             $info = $pr['info'];
             $hidden = $pr['hidden'];

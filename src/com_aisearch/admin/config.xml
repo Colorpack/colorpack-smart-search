@@ -4,6 +4,8 @@
         <field name="results_per_page" type="number" label="COM_AISEARCH_CONFIG_RESULTS" description="COM_AISEARCH_CONFIG_RESULTS_DESC" default="20" min="5" max="50" filter="integer" />
         <field name="max_results" type="number" label="COM_AISEARCH_CONFIG_MAXRESULTS" description="COM_AISEARCH_CONFIG_MAXRESULTS_DESC" default="100" min="20" max="300" filter="integer" />
         <field name="log_days" type="number" label="COM_AISEARCH_CONFIG_LOGDAYS" description="COM_AISEARCH_CONFIG_LOGDAYS_DESC" default="180" min="30" max="730" filter="integer" />
+        <field name="exclude_cats" type="category" extension="com_content" multiple="true" label="COM_AISEARCH_CONFIG_EXCLCATS" description="COM_AISEARCH_CONFIG_EXCLCATS_DESC" layout="joomla.form.field.list-fancy-select" filter="intarray" />
+        <field name="exclude_ids" type="text" label="COM_AISEARCH_CONFIG_EXCLIDS" description="COM_AISEARCH_CONFIG_EXCLIDS_DESC" default="" hint="1, 4732" />
         <field name="click_learning" type="radio" label="COM_AISEARCH_CONFIG_CLICKS" description="COM_AISEARCH_CONFIG_CLICKS_DESC" layout="joomla.form.field.radio.switcher" default="1" filter="integer">
             <option value="0">JNO</option>
             <option value="1">JYES</option>

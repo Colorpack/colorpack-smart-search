@@ -27,6 +27,9 @@ final class Precision
     public const UNITS = ['เดือน', 'ขวบ', 'ปี', 'สัปดาห์', 'อาทิตย์', 'วัน', 'month', 'months', 'year', 'years', 'week', 'weeks', 'day', 'days'];
 
     /** @param array<string,string[]> $synonyms phrase => alternatives */
+    /** @var array<string,int> how many articles keep a joined unit together (for units made of several words) */
+    private array $unitDf = [];
+
     public function __construct(
         private DatabaseInterface $db,
         private ThaiTokenizer $tk,
@@ -43,15 +46,10 @@ final class Precision
      * @param int[]    $semantic  ids ranked best by the AI similarity (may be kept as "related")
      * @return array{ids:int[],info:array<int,array<string,mixed>>,hidden:int,plan:array<string,mixed>}
      */
-    public function apply(array $tokens, array $ids, array $semantic = []): array
+    public function apply(array $tokens, array $ids, array $semantic = [], array $unitDf = []): array
     {
+        $this->unitDf = $unitDf;
         $plan = $this->plan($tokens);
-        // a long, chatty question ("อยากมีนมเยอะ ๆ ต้องกินอะไร") states an intent, not words to find: matching its words
-        // would hide the good articles and keep lucky ones, so leave the normal ranking alone
-        $filler = array_intersect($tokens, array_merge(self::FILLER, ['ๆ']));
-        if ($this->wordCount($tokens) >= 5 || ($filler && $this->wordCount($tokens) >= 4)) {
-            return ['ids' => $ids, 'info' => [], 'hidden' => 0, 'plan' => $plan, 'skipped' => true];
-        }
         if (!$ids || (!$plan['phrases'] && !$plan['core'])) {
             return ['ids' => $ids, 'info' => [], 'hidden' => 0, 'plan' => $plan];
         }
@@ -114,7 +112,7 @@ final class Precision
         }
         $N = max(1, $this->bm->docCount()); $core = []; $ctx = [];
         foreach (array_values(array_unique($rest)) as $t) {
-            $common = $N >= 50 && !ctype_digit($t) && (100 * $this->bm->docFreq($t) / $N) >= $this->commonPct;
+            $common = $N >= 50 && !ctype_digit($t) && (100 * ($this->unitDf[$t] ?? $this->bm->docFreq($t)) / $N) >= $this->commonPct;
             if ($common) {
                 $ctx[] = $t;
             } else {
@@ -243,8 +241,11 @@ final class Precision
                 $found++;
             }
         }
-        if (count($core) >= 3 && $found >= (int) ceil(0.6 * count($core))) {
-            return [4, 'most topic words', $ctx];
+        if (count($core) >= 4 && $found >= (int) ceil(0.7 * count($core))) {   // a long question: most of its topic words are enough
+            return [3, 'most topic words', $ctx];
+        }
+        if (count($core) >= 3 && $found >= (int) ceil(0.5 * count($core))) {
+            return [4, 'some topic words', $ctx];
         }
         return [9, 'topic words missing', $ctx];
     }
