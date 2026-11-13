@@ -1,5 +1,10 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.19.1
+
+- **EN** `?explain=1` (administrators, on the results page) is now **in Thai and says much more**. A box above the results tells what the search did with the typed text: the words it searched, the words it ignored as question or linking wording, corrected typing mistakes, which synonym rules fired and what they added, which topic words an article must have in full, which words count only as background, the ways of searching that were used, whether the precision mode is on and how many articles it kept and dropped, the size of the word list and the time taken. Under every result: its level and the reason in plain Thai, which of the five fields hold the whole search (title, tags, keywords, description, opening), how many times each word of the search stands in the article, and its place in the keyword ranking.
+- **ไทย** `?explain=1` (ผู้ดูแล บนหน้าผลลัพธ์) **เป็นภาษาไทยและบอกละเอียดขึ้นมาก** กล่องด้านบนผลลัพธ์บอกว่าระบบทำอะไรกับสิ่งที่พิมพ์: ค้นด้วยคำอะไร ไม่นับคำไหนเพราะเป็นคำถามหรือคำเชื่อม แก้คำพิมพ์ผิดเป็นอะไร กฎคำพ้องข้อไหนทำงานและเพิ่มคำอะไร คำหลักที่บทความต้องมีครบ คำไหนเป็นเพียงคำประกอบ ใช้วิธีค้นแบบไหนบ้าง โหมดความแม่นยำเปิดอยู่ไหมและเก็บ/ตัดบทความไปกี่เรื่อง คลังคำมีกี่คำ และใช้เวลาเท่าไร ใต้ผลแต่ละเรื่อง: ระดับและเหตุผลเป็นภาษาไทย เจอคำค้นครบในช่องไหนบ้างจาก 5 ช่อง (ชื่อเรื่อง แท็ก/หมวด คีย์เวิร์ด คำอธิบาย ย่อหน้าต้น) แต่ละคำพบในบทความกี่ครั้ง และอยู่อันดับที่เท่าไรของการค้นด้วยคำ
+
 ## 0.19.0
 
 - **EN** **A word list for the site.** Thai word splitting (ICU) cuts some everyday words in two (เบาหวาน -> เบา + หวาน, น้ำยา -> น้ำ + ยา, ตั้งครรภ์ -> ตั้ง + ครรภ์), and the pieces then match other words. A **lexicon** now puts the pieces back together, in the index and in the search alike. It has three layers: a short starter list for sites about mothers and children, the **names of the site's own tags and categories** (a name that is two words joined, found when the index is rebuilt), and the words you add on the new **Words** page (Dashboard > Improve results > Words).

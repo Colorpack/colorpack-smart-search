@@ -35,6 +35,8 @@ class HtmlView extends BaseHtmlView
     public bool $limited = false;
     public array $explain = [];
     public array $ranks = ['bm25' => [], 'ai' => []];
+    /** administrators only: what the search did with the typed text (?explain=1) */
+    public array $diag = [];
     public int $hidden = 0;
     public string $viewParam = '';
 
@@ -104,6 +106,7 @@ class HtmlView extends BaseHtmlView
             }
             $this->explain = $r['explain'] ?? [];
             $this->ranks = $r['ranks'] ?? $this->ranks;
+            $this->diag = $r['diag'] ?? [];
             $this->hidden = (int) ($r['hidden'] ?? 0);
             $this->items = $r['items'];
             $this->total = $r['total'];
@@ -220,6 +223,7 @@ class HtmlView extends BaseHtmlView
     }
 
     /** Administrators with ?explain=1: one line saying where this result stands and why. */
+    /** Why the search put this article here, in Thai (administrators only, ?explain=1). */
     public function explainHtml(object $d): string
     {
         if (!$this->explain && !$this->ranks['bm25'] && !$this->ranks['ai']) {
@@ -227,16 +231,114 @@ class HtmlView extends BaseHtmlView
         }
         $id = (int) $d->id;
         $e = $this->explain[$id] ?? null;
-        $parts = [];
+        $tiers = [
+            1 => 'ระดับ 1 — ตรงที่สุด',
+            2 => 'ระดับ 2 — ตรงรองลงมา',
+            3 => 'ระดับ 3 — เนื้อหาเกี่ยวข้อง',
+            4 => 'ระดับ 4 — แค่เอ่ยถึง',
+            9 => 'ไม่ตรงกับคำค้น',
+        ];
+        $why = [
+            'title_close' => 'คำค้นทุกคำอยู่ในชื่อเรื่องและอยู่ใกล้กัน',
+            'title_far' => 'คำค้นอยู่ในชื่อเรื่อง แต่อยู่ห่างกันคนละที่ จึงอาจไม่ใช่เรื่องเดียวกัน',
+            'meta' => 'คำค้นครบในชื่อเรื่องรวมกับแท็ก/หมวด/คีย์เวิร์ด/คำอธิบาย',
+            'body_topical' => 'คำค้นครบ และเนื้อหาพูดถึงซ้ำหรือพูดตั้งแต่ต้นเรื่อง',
+            'body_mention' => 'คำค้นครบ แต่เนื้อหาเอ่ยถึงครั้งเดียวและอยู่ท้าย ๆ',
+            'most_words' => 'มีคำค้นส่วนใหญ่ (คำถามยาว จึงไม่บังคับให้ครบ)',
+            'some_words' => 'มีคำค้นบางส่วนเท่านั้น',
+            'missing' => 'ไม่มีคำค้นในบทความ',
+            'phrase_title' => 'เจอตัวเลขกับหน่วยตรงกันในชื่อเรื่อง',
+            'phrase_title_partial' => 'เจอตัวเลขกับหน่วยในชื่อเรื่อง แต่คำอื่นของคำค้นขาด',
+            'phrase_meta' => 'เจอตัวเลขกับหน่วยในแท็ก/หมวด',
+            'phrase_meta_partial' => 'เจอตัวเลขกับหน่วยในแท็ก/หมวด แต่คำอื่นขาด',
+            'phrase_body' => 'เนื้อหาพูดถึงตัวเลขกับหน่วยนั้นเป็นเรื่องเป็นราว',
+            'phrase_body_mention' => 'เนื้อหาเอ่ยถึงตัวเลขกับหน่วยนั้นผ่าน ๆ',
+            'phrase_missing' => 'ไม่เจอตัวเลขกับหน่วยที่ค้น',
+            'short_title' => 'ค้นคำเดียว: ชื่อเรื่องมีคำนั้น',
+            'short_syn' => 'ค้นคำเดียว: ชื่อเรื่องมีคำพ้องของคำนั้น',
+            'no_text' => 'ยังไม่มีข้อความของบทความนี้ในดัชนี (ให้กดอัปเดตดัชนี)',
+        ];
+        $fieldNames = ['title' => 'ชื่อเรื่อง', 'tags' => 'แท็ก/หมวด', 'keys' => 'คีย์เวิร์ด', 'desc' => 'คำอธิบาย', 'intro' => 'ย่อหน้าต้น'];
+        $close = [0 => 'คำอยู่ติดกันในชื่อเรื่อง', 1 => 'คำอยู่ในประโยคเดียวกันของชื่อเรื่อง', 2 => 'คำอยู่คนละปลายของชื่อเรื่อง'];
+        $esc = static fn ($x) => htmlspecialchars((string) $x, ENT_QUOTES, 'UTF-8');
+        $lines = [];
         if ($e) {
-            $parts[] = 'tier ' . $e['tier'] . ': ' . $e['why'] . (!empty($e['context']) ? ' + context' : '');
+            $head = $tiers[(int) $e['tier']] ?? ('ระดับ ' . (int) $e['tier']);
+            $lines[] = '<strong>' . $esc($head) . '</strong> — ' . $esc($why[$e['why']] ?? $e['why']);
             if (isset($e['fields'])) {
-                $parts[] = 'has the search in ' . (int) $e['fields'] . ' of 5 fields (title, tags, keywords, description, opening)';
+                $names = array_map(static fn ($f) => $fieldNames[$f] ?? $f, (array) ($e['in'] ?? []));
+                $lines[] = 'เจอคำค้นครบใน ' . (int) $e['fields'] . ' จาก 5 ช่อง' . ($names ? ': ' . $esc(implode(', ', $names)) : ' (ไม่มีช่องไหนครบ มีแต่ในเนื้อหา)');
+            }
+            if (!empty($e['hits'])) {
+                $h = [];
+                foreach ((array) $e['hits'] as $w => $c) {
+                    $h[] = $esc($w) . ' ' . ((int) $c > 0 ? (int) $c . ' ครั้ง' : 'ไม่พบ');
+                }
+                $lines[] = 'พบแต่ละคำในบทความ: ' . implode(' · ', $h);
+            }
+            if (($e['why'] ?? '') === 'title_close' && isset($close[(int) ($e['close'] ?? 9)])) {
+                $lines[] = $close[(int) $e['close']];   // only when it agrees with the reason above
+            }
+            if (array_key_exists('context', $e)) {
+                $lines[] = empty($e['context']) ? 'คำประกอบ (คำกว้าง ๆ เช่น เด็ก ลูก) ไม่อยู่ในชื่อเรื่องหรือแท็ก' : 'คำประกอบของคำค้นอยู่ในชื่อเรื่องหรือแท็กด้วย';
             }
         }
-        $parts[] = 'keyword rank ' . (isset($this->ranks['bm25'][$id]) ? $this->ranks['bm25'][$id] + 1 : '-');
-        $parts[] = 'AI rank ' . (isset($this->ranks['ai'][$id]) ? $this->ranks['ai'][$id] + 1 : '-');
-        return '<div class="ai-explain" style="margin-top:6px;padding:4px 8px;border-radius:6px;background:#fff8e1;color:#6b4e00;font:12px/1.4 ui-monospace,Menlo,monospace">' . htmlspecialchars(implode('  |  ', $parts), ENT_QUOTES, 'UTF-8') . '</div>';
+        $rk = [];
+        $rk[] = 'อันดับจากการค้นด้วยคำ: ' . (isset($this->ranks['bm25'][$id]) ? $this->ranks['bm25'][$id] + 1 : 'ไม่ติดอันดับ');
+        $lines[] = implode(' · ', $rk);
+        return '<div class="ai-explain" style="margin-top:6px;padding:6px 10px;border-radius:6px;background:#fff8e1;color:#5c4400;font-size:12px;line-height:1.6">'
+            . implode('<br>', $lines) . '</div>';
+    }
+
+    /** One box above the results: what the search understood from what was typed (administrators only, ?explain=1). */
+    public function explainHeader(): string
+    {
+        if (!$this->diag) {
+            return '';
+        }
+        $d = $this->diag;
+        $e = static fn ($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
+        $src = ['keyword' => 'คำค้น (BM25)', 'synonyms' => 'คำพ้อง', 'clicks' => 'เรียนรู้จากการคลิก', 'short' => 'โหมดค้นคำเดียว (ชื่อเรื่องเท่านั้น)'];
+        $rows = [];
+        $rows[] = '<strong>ผู้ใช้พิมพ์:</strong> ' . $e($d['typed']);
+        $rows[] = '<strong>ระบบค้นด้วยคำ:</strong> ' . ($d['units'] ? $e(implode('  +  ', $d['units'])) : '— (ไม่เหลือคำที่ค้นได้)');
+        if (!empty($d['plan'])) {
+            $pl = $d['plan'];
+            if (!empty($pl['phrases'])) {
+                $rows[] = '<strong>ตัวเลขกับหน่วยที่ต้องตรง:</strong> ' . $e(implode(', ', $pl['phrases']));
+            }
+            if ($pl['core'] || !$pl['phrases']) {
+                $rows[] = '<strong>คำหลักที่บทความต้องมีครบ:</strong> ' . ($pl['core'] ? $e(implode(', ', $pl['core'])) : '— (ไม่เหลือคำหลัก)');
+            }
+            if (!empty($pl['context'])) {
+                $rows[] = '<strong>คำประกอบ</strong> (คำกว้าง ๆ ที่พบในบทความส่วนใหญ่ ใช้ช่วยจัดลำดับเท่านั้น): ' . $e(implode(', ', $pl['context']));
+            }
+        }
+        if (!empty($d['corrected'])) {
+            $c = [];
+            foreach ($d['corrected'] as $from => $to) { $c[] = $e($from) . ' → ' . $e($to); }
+            $rows[] = '<strong>แก้คำพิมพ์ผิด:</strong> ' . implode(', ', $c);
+        }
+        $dropped = array_values(array_diff($d['typed_words'] ?? [], $d['units'] ?? []));
+        if ($dropped) {
+            $rows[] = '<strong>ไม่นับเป็นคำค้น</strong> (คำถาม คำเชื่อม หรือถูกกฎคำพ้องแทนที่): ' . $e(implode(', ', $dropped));
+        }
+        foreach ((array) ($d['rules'] ?? []) as $r) {
+            $rows[] = '<strong>กฎคำพ้องที่ทำงาน:</strong> ' . $e($r['key']) . ' → ' . $e(implode(', ', $r['alts']));
+        }
+        $names = array_map(static fn ($k) => $src[$k] ?? $k, array_unique((array) ($d['sources'] ?? [])));
+        $rows[] = '<strong>ใช้วิธีค้น:</strong> ' . ($names ? $e(implode(' + ', $names)) : '—');
+        if (!empty($d['precision'])) {
+            $rows[] = '<strong>โหมดความแม่นยำ:</strong> เปิด (แสดงถึงระดับ ' . (int) ($d['max_tier'] ?? 3) . ') · ผู้สมัครก่อนกรอง '
+                . (int) ($d['before'] ?? 0) . ' เรื่อง → เหลือ ' . (int) ($d['kept'] ?? 0) . ' เรื่อง · ตัดออก ' . (int) ($d['hidden'] ?? 0) . ' เรื่อง';
+        } elseif (empty($d['short'])) {
+            $rows[] = '<strong>โหมดความแม่นยำ:</strong> ปิด (ไม่ได้ตัดบทความที่ไม่ตรงออก)';
+        }
+        $rows[] = '<strong>คลังคำ:</strong> ' . ((int) ($d['lexicon'] ?? 0) > 0 ? number_format((int) $d['lexicon']) . ' คำ' : 'ไม่ได้ใช้ (ดัชนีสร้างก่อนมีคลังคำ — กดอัปเดตดัชนี)')
+            . ' · ใช้เวลา ' . $this->ms . ' มิลลิวินาที';
+        return '<div class="ai-explain-head" style="margin:0 0 14px;padding:10px 14px;border-radius:8px;background:#fff4d6;border:1px solid #f0d27a;color:#5c4400;font-size:13px;line-height:1.7">'
+            . '<div style="font-weight:700;margin-bottom:4px">อธิบายการค้นหา (เห็นเฉพาะผู้ดูแล — ตัด &amp;explain=1 ออกเพื่อปิด)</div>'
+            . implode('<br>', $rows) . '</div>';
     }
 
     /** Link for the List / Cards switch (resets to page 1). */

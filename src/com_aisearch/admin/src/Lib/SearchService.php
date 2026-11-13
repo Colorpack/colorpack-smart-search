@@ -88,8 +88,8 @@ final class SearchService
         };
         $info = [];
         $ids = [];
-        foreach ($sort($a) as $id) { $ids[] = $id; $info[$id] = ['tier' => 1, 'why' => 'the word is in the title', 'context' => true, 'fields' => $cover[$id] ?? 0]; }
-        foreach ($sort($b) as $id) { $ids[] = $id; $info[$id] = ['tier' => 2, 'why' => 'a synonym is in the title', 'context' => true]; }
+        foreach ($sort($a) as $id) { $ids[] = $id; $info[$id] = ['tier' => 1, 'why' => 'short_title', 'context' => true, 'fields' => $cover[$id] ?? 0]; }
+        foreach ($sort($b) as $id) { $ids[] = $id; $info[$id] = ['tier' => 2, 'why' => 'short_syn', 'context' => true]; }
         return ['ids' => $ids, 'info' => $info];
     }
 
@@ -211,11 +211,16 @@ final class SearchService
         $qt = (new QueryTerms($tk, $bm, $known))->analyse($q);
         $tokens = $qt['tokens'];   // the words that are left once question wording is dropped
         $units = $qt['units'];     // the same with compounds joined (เบา + หวาน -> เบาหวาน)
+        // everything the explain view needs to tell the administrator what the search did
+        $diag = ['typed' => $q, 'units' => [], 'typed_words' => $qt['tokens'], 'corrected' => $qt['corrected'] ?? [],
+            'lexicon' => Lexicon::$active ? Lexicon::$active->count() : 0, 'rules' => [], 'concepts' => [],
+            'sources' => [], 'precision' => false, 'max_tier' => $this->settings->precisionMaxTier(), 'short' => false, 'rewrite' => ''];
         $expanded = [];
         $fired = [];   // only the rules that apply to this search
         foreach ($this->synonyms() as $key => $alts) {
             if (SynonymStore::fires((string) $key, $qn, $tk)) {
                 $fired[$key] = $alts;
+                $diag['rules'][] = ['key' => (string) $key, 'alts' => $alts];
                 array_push($expanded, ...$alts);
             }
         }
@@ -238,6 +243,7 @@ final class SearchService
                 }
             }
             $concepts[] = $alts;
+            $diag['concepts'][] = ['key' => (string) $key, 'alts' => $alts];
             // the alternatives already say the action ("ห้ามกิน", "ห้ามใช้"): the plain verb of the search is no longer a separate word to find
             $units = array_values(array_filter($units, static fn ($u) => !in_array($u, ['กิน', 'ใช้', 'ทาน', 'ดื่ม', 'รับประทาน'], true)));
         }
@@ -270,14 +276,18 @@ final class SearchService
             }
             if ($removed > 0) {
                 $concepts[] = array_merge([(string) $key], $alts);
+                $diag['concepts'][] = ['key' => (string) $key, 'alts' => $alts];
             }
         }
         $rankings = [[]]; $weights = []; $mode = 'keyword'; $vec = []; $rewrite = ''; $fused = []; $info = []; $hidden = 0;
         // a very short search (one word): every article with the word in its title, newest first, and nothing else
         $short = $this->titleMatches($units, $concepts, $fired, $tk, $bm);
+        $diag['units'] = $units;
         if ($short !== null) {
             $fused = $short['ids'];
             $info = $short['info'];
+            $diag['short'] = true;
+            $diag['sources'][] = 'short';
         } else {
             // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
             $usePrecision = $precision ?? $this->settings->precisionMode();
@@ -287,6 +297,8 @@ final class SearchService
             $depth = $usePrecision ? 800 : 100;
             $rankings = [$bm->search($terms ?: $qt['terms'], $depth)];
             $weights = [1.0];
+            $diag['sources'][] = 'keyword';
+            $diag['precision'] = $usePrecision;
             if ($expanded) {
                 $expTerms = [];
                 foreach ($expanded as $alt) {   // each synonym is a phrase of its own: its words and its neighbouring pairs
@@ -294,6 +306,7 @@ final class SearchService
                 }
                 $rankings[] = $bm->search($expTerms, $depth);
                 $weights[] = 0.5;
+                $diag['sources'][] = 'synonyms';
             }
             $mode = 'keyword';
             $vec = [];
@@ -303,6 +316,7 @@ final class SearchService
                 if ($learned) {
                     $rankings[] = $learned;
                     $weights[] = 1.0;
+                    $diag['sources'][] = 'clicks';
                 }
             }
             $fused = $this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights)));
@@ -313,6 +327,13 @@ final class SearchService
             $prec->setShortExcludes($this->settings->shortExclude());
             $pr = $prec
                 ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
+                $diag['before'] = count($fused);
+                // the plan's placeholders stand for the alternatives of a rule: show the words, not the placeholder
+                $planCore = [];
+                foreach ($pr['plan']['core'] ?? [] as $w) {
+                    $planCore[] = str_starts_with((string) $w, "\u{00A7}") ? implode(' / ', array_slice($concepts[(int) substr((string) $w, 1)] ?? [], 0, 4)) : $w;
+                }
+                $diag['plan'] = ['core' => array_values(array_unique($planCore)), 'context' => $pr['plan']['context'] ?? [], 'phrases' => array_map(static fn ($x) => $x['n'] . ' ' . $x['u'], $pr['plan']['phrases'] ?? [])];
                 $fused = $pr['ids'];
                 $info = $pr['info'];
                 $hidden = $pr['hidden'];
@@ -335,7 +356,10 @@ final class SearchService
         $res = ['items' => $items, 'total' => $total, 'ms' => round((microtime(true) - $t0) * 1000, 1), 'indexed' => true, 'mode' => $mode, 'hidden' => $hidden, 'rewrite' => $rewrite];
         if ($explain) {
             $res['explain'] = $info;
-            $res['ranks'] = ['bm25' => array_flip(array_keys($rankings[0])), 'ai' => array_flip(array_keys($vec))];
+            $res['ranks'] = ['bm25' => array_flip(array_keys($rankings[0] ?? [])), 'ai' => array_flip(array_keys($vec))];
+            $diag['hidden'] = $hidden;
+            $diag['kept'] = $total;
+            $res['diag'] = $diag;
         }
         return $res;
     }

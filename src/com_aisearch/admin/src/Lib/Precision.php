@@ -75,13 +75,13 @@ final class Precision
             $this->curId = (int) $id;
             $t = $texts[$id] ?? null;
             if ($t === null) {
-                $rows[] = [$id, 9, 0, $pos, ['tier' => 9, 'why' => 'no text']];
+                $rows[] = [$id, 9, 0, $pos, ['tier' => 9, 'why' => 'no_text']];
                 continue;
             }
             [$tier, $why, $ctx] = $plan['phrases'] ? $this->tierPhrase($plan, $t) : $this->tierWords($plan, $t);
             if ($tier > $this->maxTier && isset($keepSem[$id])) {
                 $tier = $this->maxTier + 1;
-                $why = 'ai-similar';
+                $why = 'ai_similar';
             }
             // among articles that only discuss the words in the text, the one that says them most comes first
             $dens = 0;
@@ -94,9 +94,11 @@ final class Precision
                     $dens += min(5, $best);
                 }
             }
-            $cov = $tier < 9 ? $this->coverage($plan, $t) : 0;
+            $fields = $tier < 9 ? $this->coverFields($plan, $t) : [];
+            $cov = count($fields);
             $cls = $tier <= 2 && !$plan['phrases'] ? $this->titleCloseness($plan['core'], $t['title']) : 0;
-            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx, 'fields' => $cov, 'close' => $cls], $dens, $cov, $cls];
+            $rows[] = [$id, $tier, $ctx ? 1 : 0, $pos, ['tier' => $tier, 'why' => $why, 'context' => $ctx, 'fields' => $cov,
+                'in' => $fields, 'close' => $cls, 'hits' => $this->wordHits($plan, $t)], $dens, $cov, $cls];
         }
         // the better level first (the words in the title, then in tags / keywords / description, then in the text); inside a level the title that says the words close together comes first, then the article that has
         // the search in the most fields (title, tags, keywords, description, opening) comes first, then the rest
@@ -338,6 +340,25 @@ final class Precision
         return $min <= 24 ? 0 : ($min <= 48 ? 1 : 2);
     }
 
+    /** How many times each word of the search (or a synonym of it) stands in this article. @return array<string,int> */
+    private function wordHits(array $plan, array $t): array
+    {
+        $out = [];
+        $text = $t['title'] . ' ' . $t['meta'] . ' ' . $t['body'];
+        foreach ($plan['phrases'] as $p) {
+            $out[$p['n'] . ' ' . $p['u']] = (int) preg_match_all($this->phraseRe($p), $text);
+        }
+        foreach ($plan['core'] as $w) {
+            $label = str_starts_with($w, "\u{00A7}") ? implode('/', array_slice($this->formsOf($w), 0, 3)) : $w;
+            $best = 0;
+            foreach ($this->formsOf($w) as $f) {
+                $best = max($best, $this->isShort($f) && $this->curId > 0 ? $this->shortCount($text, $f) : mb_substr_count($text, $f));
+            }
+            $out[$label] = $best;
+        }
+        return $out;
+    }
+
     /** Does this piece of text have everything the search asks for (all its words, or its number and unit)? */
     private function covers(array $plan, string $text): bool
     {
@@ -359,13 +380,19 @@ final class Precision
     /** In how many of title, tags, Meta Keywords, Meta Description and the opening of the article does the search appear in full? */
     private function coverage(array $plan, array $t): int
     {
-        $n = 0;
+        return count($this->coverFields($plan, $t));
+    }
+
+    /** Which of those five fields have the whole search in them. @return string[] */
+    private function coverFields(array $plan, array $t): array
+    {
+        $out = [];
         foreach (['title', 'tags', 'keys', 'desc', 'intro'] as $f) {
             if ($this->covers($plan, (string) ($t[$f] ?? ''))) {
-                $n++;
+                $out[] = $f;
             }
         }
-        return $n;
+        return $out;
     }
 
     /** @return array{0:int,1:string,2:bool} tier, reason, has the context in title/tags/category */
@@ -377,16 +404,16 @@ final class Precision
         $ctx = !$plan['context'] || $this->allIn($plan['context'], $metaAll);
         $coreOk = !$plan['core'] || $this->allIn($plan['core'], $metaAll . ' ' . $t['body']);
         if ($all($t['title'])) {
-            return [$coreOk ? 1 : 4, $coreOk ? 'phrase in title' : 'phrase in title, other words missing', $ctx];
+            return [$coreOk ? 1 : 4, $coreOk ? 'phrase_title' : 'phrase_title_partial', $ctx];
         }
         if ($all($t['meta'])) {
-            return [$coreOk ? 2 : 4, 'phrase in tags/category', $ctx];
+            return [$coreOk ? 2 : 4, $coreOk ? 'phrase_meta' : 'phrase_meta_partial', $ctx];
         }
         if ($all($t['body'])) {
             $about = $coreOk && $ctx && $this->phraseDiscussed($re, $t['body']);
-            return [$about ? 3 : 4, $about ? 'phrase discussed in the text' : 'phrase only mentioned in the text', $ctx];
+            return [$about ? 3 : 4, $about ? 'phrase_body' : 'phrase_body_mention', $ctx];
         }
-        return [9, 'phrase not found', $ctx];
+        return [9, 'phrase_missing', $ctx];
     }
 
     /** @return array{0:int,1:string,2:bool} */
@@ -397,15 +424,15 @@ final class Precision
         if ($this->allIn($core, $t['title'])) {
             // tier 1 only when the words stand close together; words scattered across a long title are a weaker match
             if (count($core) < 2 || $this->tight($core, $t['title'])) {   // only the topic words count here, not background words like เด็ก / ลูก
-                return [1, 'all topic words in title, close together', $ctx];
+                return [1, 'title_close', $ctx];
             }
-            return [2, 'topic words in title, but far apart', $ctx];
+            return [2, 'title_far', $ctx];
         }
         if ($this->allIn($core, $t['title'] . ' ' . $t['meta'])) {
-            return [2, 'all topic words in title/tags/category', $ctx];
+            return [2, 'meta', $ctx];
         }
         if ($this->allIn($core, $t['title'] . ' ' . $t['meta'] . ' ' . $t['body'])) {
-            return [$this->topical($core, $t['body']) ? 3 : 4, $this->topical($core, $t['body']) ? 'all topic words, discussed in the text' : 'topic words only mentioned', $ctx];
+            return [$this->topical($core, $t['body']) ? 3 : 4, $this->topical($core, $t['body']) ? 'body_topical' : 'body_mention', $ctx];
         }
         $found = 0;
         foreach ($core as $w) {
@@ -414,12 +441,12 @@ final class Precision
             }
         }
         if (count($core) >= 4 && $found >= (int) ceil(0.7 * count($core))) {   // a long question: most of its topic words are enough
-            return [3, 'most topic words', $ctx];
+            return [3, 'most_words', $ctx];
         }
         if (count($core) >= 3 && $found >= (int) ceil(0.5 * count($core))) {
-            return [4, 'some topic words', $ctx];
+            return [4, 'some_words', $ctx];
         }
-        return [9, 'topic words missing', $ctx];
+        return [9, 'missing', $ctx];
     }
 
     /**

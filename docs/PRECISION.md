@@ -18,7 +18,7 @@ Quantities with units (1 เดือน, 3 ขวบ, 2 years) are one unit, an
 1. Upgrade, then press *Rebuild / update index* once.
 2. Open *Compare search modes* on the dashboard and try your real searches.
 3. When happy, switch Precision mode on in Options > Search.
-4. Administrators can add `?explain=1` to a results URL to see the level and reason of each article.
+4. Administrators can add `?explain=1` to a results URL (log in on the site itself, not only in the administrator) to see, in Thai, what the search did with the typed text and why each article is where it is: its level and reason, which of the five fields hold the whole search, and how many times each word appears in the article.
 
 Not yet done (waiting for site-owner feedback): per-article topic and age data, a reranker, a "related articles" section.
 
@@ -40,6 +40,6 @@ Not yet done (waiting for site-owner feedback): per-article topic and age data, 
 1. อัปเกรด แล้วกด *Rebuild / update index* หนึ่งครั้ง
 2. เปิด *เปรียบเทียบโหมดการค้น* ในแดชบอร์ด ลองคำค้นจริงของเว็บ
 3. พอใจแล้วเปิดโหมดความแม่นยำที่ ตัวเลือก > Search
-4. ผู้ดูแลเติม `?explain=1` ท้าย URL ผลลัพธ์เพื่อดูระดับและเหตุผลของแต่ละบทความ
+4. ผู้ดูแลเติม `?explain=1` ท้าย URL ผลลัพธ์ (ต้องล็อกอินที่หน้าเว็บ ไม่ใช่แค่หลังบ้าน) จะเห็นคำอธิบายภาษาไทยว่าระบบทำอะไรกับคำที่พิมพ์ และแต่ละบทความอยู่ตรงนั้นเพราะอะไร ทั้งระดับ เหตุผล ช่องที่เจอคำค้นครบ และจำนวนครั้งที่พบแต่ละคำ
 
 ยังไม่ทำ (รอคำตอบจากเจ้าของเว็บ): ข้อมูลหัวข้อและช่วงอายุของแต่ละบทความ, reranker, ส่วน "บทความที่เกี่ยวข้อง"
