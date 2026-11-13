@@ -3,7 +3,7 @@
     <name>Colorpack Smart Search - Content Plugin</name>
     <author>Colorpack</author>
     <creationDate>2026-11</creationDate>
-    <version>0.15.0</version>
+    <version>0.16.0</version>
     <description>Keeps the Colorpack Smart Search index in sync when articles change. / อัปเดตดัชนีของ Colorpack Smart Search อัตโนมัติเมื่อบทความเปลี่ยน</description>
     <namespace path="src">Colorpack\Plugin\Content\AiSearch</namespace>
     <files>

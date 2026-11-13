@@ -55,6 +55,8 @@ final class Settings
         $parts = is_array($v) ? $v : (preg_split('/[\s,;]+/', (string) $v) ?: []);
         return array_values(array_unique(array_filter(array_map('intval', $parts), static fn ($i) => $i > 0)));
     }
+    /** 0 = off; 1 = one-word searches show articles with the word in the title, newest first; 2 = same, most read first */
+    public function shortQueryMode(): int { return max(0, min(2, (int) $this->p->get('short_query_mode', 0))); }
     public function clickLearning(): bool { return (int) $this->p->get('click_learning', 1) === 1; }
     public function clickMin(): int { return max(1, min(50, (int) $this->p->get('click_min', 3))); }
     public function maxResults(): int { return max(20, min(300, (int) $this->p->get('max_results', 100))); }

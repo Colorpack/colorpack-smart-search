@@ -21,6 +21,72 @@ final class SearchService
     }
 
     /**
+     * A one-word search ("นมแม่") is too short to say what the visitor wants, so articles that only mention the word are noise:
+     * show the articles whose TITLE has the word (then those whose title has a synonym of it), newest or most read first.
+     * Returns null when this does not apply (the setting is off, more than one word, a rule that explains the wish, or no title has the word),
+     * and the normal search runs instead.
+     * @return array{ids:int[],info:array}|null
+     */
+    private function titleMatches(array $units, array $concepts, array $fired, ThaiTokenizer $tk): ?array
+    {
+        if ($this->settings->shortQueryMode() === 0 || count($units) !== 1 || $concepts || mb_strlen($units[0]) < 2 || ctype_digit($units[0])) {
+            return null;
+        }
+        $db = $this->db;
+        $exact = $tk->normalize($units[0]);
+        $syn = [];
+        foreach ($fired as $key => $alts) {
+            if (!str_contains((string) $key, '+') && mb_strpos($tk->normalize((string) $key), $exact) !== false) {
+                foreach ($alts as $a) { $syn[] = $tk->normalize((string) $a); }
+            }
+        }
+        $syn = array_values(array_diff(array_unique(array_filter($syn)), [$exact]));
+        $likes = [];
+        foreach (array_merge([$exact], $syn) as $f) {
+            $likes[] = $db->quoteName('title') . " LIKE '%" . $db->escape($f, true) . "%'";
+        }
+        try {
+            $rows = $db->setQuery('SELECT id, title, created FROM ' . $db->quoteName('#__aisearch_docs') . ' WHERE (' . implode(' OR ', $likes) . ') AND ' . $this->visibleWhere() . ' LIMIT 3000')->loadObjectList() ?: [];
+        } catch (\Throwable $e) {
+            return null;
+        }
+        $a = []; $b = [];
+        foreach ($rows as $r) {
+            $t = $tk->normalize((string) $r->title);
+            if (mb_strpos($t, $exact) !== false) {
+                $a[(int) $r->id] = $r;
+            } else {
+                foreach ($syn as $f) {
+                    if (mb_strpos($t, $f) !== false) { $b[(int) $r->id] = $r; break; }
+                }
+            }
+        }
+        if (!$a && !$b) {
+            return null;
+        }
+        $hits = [];
+        $all = array_keys($a + $b);
+        try {
+            foreach ($db->setQuery('SELECT id, hits FROM ' . $db->quoteName('#__content') . ' WHERE id IN (' . implode(',', array_map('intval', $all)) . ')')->loadObjectList() ?: [] as $h) { $hits[(int) $h->id] = (int) $h->hits; }
+        } catch (\Throwable $e) {
+        }
+        $popular = $this->settings->shortQueryMode() === 2;
+        $sort = static function (array $set) use ($hits, $popular): array {
+            $ids = array_keys($set);
+            usort($ids, static function ($x, $y) use ($set, $hits, $popular) {
+                $dx = (string) $set[$x]->created; $dy = (string) $set[$y]->created; $hx = $hits[$x] ?? 0; $hy = $hits[$y] ?? 0;
+                return $popular ? [$hy, $dy] <=> [$hx, $dx] : [$dy, $hy] <=> [$dx, $hx];
+            });
+            return $ids;
+        };
+        $info = [];
+        $ids = [];
+        foreach ($sort($a) as $id) { $ids[] = $id; $info[$id] = ['tier' => 1, 'why' => 'the word is in the title', 'context' => true]; }
+        foreach ($sort($b) as $id) { $ids[] = $id; $info[$id] = ['tier' => 2, 'why' => 'a synonym is in the title', 'context' => true]; }
+        return ['ids' => $ids, 'info' => $info];
+    }
+
+    /**
      * SQL conditions that hide articles which are not visible to this visitor right now: not yet published, already expired,
      * or in an access level the visitor does not have. Checked at search time, so nothing has to run when a date arrives.
      */
@@ -144,38 +210,46 @@ final class SearchService
             $concepts[] = $alts;
         }
         $terms = array_values($terms);
-        // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
-        $usePrecision = $precision ?? $this->settings->precisionMode();
-        $depth = $usePrecision ? 800 : 100;
-        $rankings = [$bm->search($terms ?: $qt['terms'], $depth)];
-        $weights = [1.0];
-        if ($expanded) {
-            $expTerms = [];
-            foreach ($expanded as $alt) {   // each synonym is a phrase of its own: its words and its neighbouring pairs
-                $expTerms = array_merge($expTerms, ThaiTokenizer::withPairs($tk->tokenize($alt)));
+        $rankings = [[]]; $weights = []; $mode = 'keyword'; $vec = []; $rewrite = ''; $fused = []; $info = []; $hidden = 0;
+        // a very short search (one word): every article with the word in its title, newest first, and nothing else
+        $short = $this->titleMatches($units, $concepts, $fired, $tk);
+        if ($short !== null) {
+            $fused = $short['ids'];
+            $info = $short['info'];
+        } else {
+            // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
+            $usePrecision = $precision ?? $this->settings->precisionMode();
+            $depth = $usePrecision ? 800 : 100;
+            $rankings = [$bm->search($terms ?: $qt['terms'], $depth)];
+            $weights = [1.0];
+            if ($expanded) {
+                $expTerms = [];
+                foreach ($expanded as $alt) {   // each synonym is a phrase of its own: its words and its neighbouring pairs
+                    $expTerms = array_merge($expTerms, ThaiTokenizer::withPairs($tk->tokenize($alt)));
+                }
+                $rankings[] = $bm->search($expTerms, $depth);
+                $weights[] = 0.5;
             }
-            $rankings[] = $bm->search($expTerms, $depth);
-            $weights[] = 0.5;
-        }
-        $mode = 'keyword';
-        $vec = [];
-        $rewrite = '';
-        if ($semantic && $this->settings->clickLearning()) {
-            $learned = (new Clicks($this->db, $tk))->learned($q, $this->settings->clickMin());
-            if ($learned) {
-                $rankings[] = $learned;
-                $weights[] = 1.0;
+            $mode = 'keyword';
+            $vec = [];
+            $rewrite = '';
+            if ($semantic && $this->settings->clickLearning()) {
+                $learned = (new Clicks($this->db, $tk))->learned($q, $this->settings->clickMin());
+                if ($learned) {
+                    $rankings[] = $learned;
+                    $weights[] = 1.0;
+                }
             }
-        }
-        $fused = $this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights)));
-        $info = [];
-        $hidden = 0;
-        if ($usePrecision) {
-            $pr = (new Precision($this->db, $tk, $bm, $fired, $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
-                ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
-            $fused = $pr['ids'];
-            $info = $pr['info'];
-            $hidden = $pr['hidden'];
+            $fused = $this->onlyVisible(array_keys(Rrf::fuse($rankings, 60, $weights)));
+            $info = [];
+            $hidden = 0;
+            if ($usePrecision) {
+                $pr = (new Precision($this->db, $tk, $bm, $fired, $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
+                    ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
+                $fused = $pr['ids'];
+                $info = $pr['info'];
+                $hidden = $pr['hidden'];
+            }
         }
         $all = array_slice($fused, 0, $max);
         $total = count($all);
