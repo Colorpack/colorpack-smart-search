@@ -2,10 +2,10 @@
 
 ## 0.18.1
 
-- **EN** Fixed: a short Thai word such as "ยา" was found inside longer words ("น้ำยา", "ขนมจีนน้ำยา"), so a search for medicine returned an article about vermicelli with curry. A word of up to three letters now has to be a word of its own in the article (the index knows the words ICU found; titles, tags and descriptions are cut into words on the spot).
+- **EN** Improved: a short Thai word such as "ยา" was found inside longer words ("น้ำยา", "ขนมจีนน้ำยา"), so a search for medicine returned an article about vermicelli with curry in second place. A word of up to three letters now has to be a word of its own in the article (the index knows the words ICU found; titles, tags and descriptions are cut into words on the spot). This is not perfect: ICU itself cuts "น้ำยา" into น้ำ + ยา, so such an article still appears, but far down (19th instead of 2nd in the test).
 - **EN** Fixed: in a sentence, words that often stand next to others (ห้าม, ไม่, กิน, ใช้, ได้ ...) could be joined into a "word" that does not exist ("คนท้องห้าม", "คนท้องไม่") and leave no result. They are now always separate words.
 - **EN** A rule such as `ยา + ไม่ควร = ห้ามกิน, ห้ามใช้, ไม่ควรกิน, ...` no longer makes the first part ("ยา") match its own alternatives, and the plain verb of the search (กิน, ใช้) is no longer required when the alternatives already say it.
-- **ไทย** แก้: คำไทยสั้น ๆ อย่าง "ยา" เคยถูกพบข้างในคำที่ยาวกว่า ("น้ำยา" "ขนมจีนน้ำยา") ค้นหาเรื่องยาจึงได้บทความขนมจีนน้ำยา ตอนนี้คำที่ยาวไม่เกินสามตัวอักษรต้องเป็นคำของตัวเองในบทความ (ดัชนีรู้คำที่ ICU ตัดไว้ ส่วนชื่อเรื่อง แท็ก และคำอธิบายจะถูกตัดคำตอนค้น)
+- **ไทย** ปรับปรุง: คำไทยสั้น ๆ อย่าง "ยา" เคยถูกพบข้างในคำที่ยาวกว่า ("น้ำยา" "ขนมจีนน้ำยา") ค้นหาเรื่องยาจึงได้บทความขนมจีนน้ำยาเป็นอันดับสอง ตอนนี้คำที่ยาวไม่เกินสามตัวอักษรต้องเป็นคำของตัวเองในบทความ (ดัชนีรู้คำที่ ICU ตัดไว้ ส่วนชื่อเรื่อง แท็ก และคำอธิบายจะถูกตัดคำตอนค้น) ยังไม่สมบูรณ์: ICU เองตัด "น้ำยา" เป็น น้ำ + ยา บทความนั้นจึงยังขึ้น แต่ลงไปอยู่ท้าย ๆ (อันดับ 19 แทนอันดับ 2 ในการทดสอบ)
 - **ไทย** แก้: ในประโยค คำที่อยู่ติดกับคำอื่นบ่อย (ห้าม ไม่ กิน ใช้ ได้ ...) เคยถูกรวมเป็น "คำ" ที่ไม่มีจริง ("คนท้องห้าม" "คนท้องไม่") จนไม่ได้ผลลัพธ์ ตอนนี้แยกเป็นคำเสมอ
 - **ไทย** กฎอย่าง `ยา + ไม่ควร = ห้ามกิน, ห้ามใช้, ไม่ควรกิน, ...` ไม่ทำให้ส่วนแรก ("ยา") ไปตรงกับคำทางขวาของตัวเองอีก และไม่ต้องหาคำกริยา (กิน ใช้) ซ้ำเมื่อคำทางขวาบอกการกระทำอยู่แล้ว
 
