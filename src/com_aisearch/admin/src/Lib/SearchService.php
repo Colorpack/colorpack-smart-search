@@ -186,13 +186,26 @@ final class SearchService
         $tk = new ThaiTokenizer();
         $qn = $tk->normalize($q);
         $db = $this->db;
-        $known = static function (string $w) use ($db): bool {   // does any article contain this string?
-            try {
-                $e = $db->escape($w, true);
-                return (int) $db->setQuery('SELECT COUNT(*) FROM (SELECT d.id FROM ' . $db->quoteName('#__aisearch_docs') . ' d LEFT JOIN ' . $db->quoteName('#__aisearch_text') . " t ON t.id = d.id WHERE d.title LIKE '%" . $e . "%' OR t.body LIKE '%" . $e . "%' LIMIT 3) x")->loadResult() >= 3;
-            } catch (\Throwable $e2) {
-                return false;
+        // which of these strings does any article contain (3 articles at least)? One pass over the articles for all of them.
+        $known = static function (array $words) use ($db): array {
+            $out = [];
+            $words = array_slice(array_values(array_unique($words)), 0, 16);
+            if (!$words) {
+                return $out;
             }
+            try {
+                $cols = [];
+                foreach ($words as $k => $w) {
+                    $e = $db->escape($w, true);
+                    $cols[] = "SUM(d.title LIKE '%" . $e . "%' OR t.body LIKE '%" . $e . "%') AS k" . $k;
+                }
+                $row = $db->setQuery('SELECT ' . implode(', ', $cols) . ' FROM ' . $db->quoteName('#__aisearch_docs') . ' d LEFT JOIN ' . $db->quoteName('#__aisearch_text') . ' t ON t.id = d.id')->loadAssoc() ?: [];
+                foreach ($words as $k => $w) {
+                    $out[$w] = (int) ($row['k' . $k] ?? 0) >= 3;
+                }
+            } catch (\Throwable $e2) {
+            }
+            return $out;
         };
         $qt = (new QueryTerms($tk, $bm, $known))->analyse($q);
         $tokens = $qt['tokens'];   // the words that are left once question wording is dropped
@@ -226,6 +239,33 @@ final class SearchService
             $concepts[] = $alts;
         }
         $terms = array_values($terms);
+        // a rule whose phrase stands for words of the search ("ตอนท้อง", "ท้องอยู่" = pregnant) replaces those words: otherwise the "ท้อง" in
+        // "ท้องเสียตอนท้อง" is satisfied by any article about an upset stomach
+        foreach ($fired as $key => $alts) {
+            if (str_contains((string) $key, '+')) {
+                continue;
+            }
+            $consumed = $tk->tokenize((string) $key);
+            $removed = 0; $needed = 0;
+            foreach ($consumed as $ct) {
+                if (QueryTerms::isFiller($ct)) {
+                    continue;   // wording such as ตอน, ขณะ is dropped from the search anyway
+                }
+                $needed++;
+                $at = array_search($ct, $units, true);
+                if ($at !== false) {
+                    unset($units[$at]);
+                    $units = array_values($units);
+                    $removed++;
+                }
+            }
+            if ($removed < $needed) {   // only part of the phrase is a separate word of the search: leave the search as typed
+                continue;
+            }
+            if ($removed > 0) {
+                $concepts[] = array_merge([(string) $key], $alts);
+            }
+        }
         $rankings = [[]]; $weights = []; $mode = 'keyword'; $vec = []; $rewrite = ''; $fused = []; $info = []; $hidden = 0;
         // a very short search (one word): every article with the word in its title, newest first, and nothing else
         $short = $this->titleMatches($units, $concepts, $fired, $tk, $bm);
@@ -235,6 +275,9 @@ final class SearchService
         } else {
             // precision mode starts from a much deeper list, because the right articles can sit far below the first hundred
             $usePrecision = $precision ?? $this->settings->precisionMode();
+        if ($usePrecision) {
+            $max = max($max, 1000);   // the precision mode shows every article that really matches: the limit only caps a list that is padded with weak matches
+        }
             $depth = $usePrecision ? 800 : 100;
             $rankings = [$bm->search($terms ?: $qt['terms'], $depth)];
             $weights = [1.0];

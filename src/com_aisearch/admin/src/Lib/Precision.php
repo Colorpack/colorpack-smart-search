@@ -248,7 +248,7 @@ final class Precision
      */
     private function titleCloseness(array $core, string $title): int
     {
-        $words = array_values(array_filter($core, static fn ($w) => !str_starts_with($w, '§')));
+        $words = array_values($core);   // a rule's alternatives (§) count as a word: the title is about them when they stand close to the others
         if (count($words) < 2) {
             return $words && $this->has($title, $words[0]) ? 0 : 3;
         }

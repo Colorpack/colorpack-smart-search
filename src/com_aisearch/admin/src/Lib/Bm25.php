@@ -81,6 +81,50 @@ final class Bm25
         return is_array($p) ? count($p) : intdiv(strlen($p), 8);
     }
 
+    /**
+     * The word of the index that the typed word is probably a misspelling of (one letter wrong, missing, extra or swapped), the most common one;
+     * null when there is none. Used when a search word is in no article at all.
+     */
+    public function nearest(string $word, int $minDf = 5): ?string
+    {
+        $w = mb_str_split($word);
+        $n = count($w);
+        $best = null; $bestDf = 0;
+        foreach ($this->postings as $term => $p) {
+            $term = (string) $term;
+            $len = mb_strlen($term);
+            if ($len < $n - 1 || $len > $n + 1 || str_contains($term, "\u{00B7}")) {
+                continue;
+            }
+            $df = is_array($p) ? count($p) : intdiv(strlen($p), 8);
+            if ($df < $minDf || $df <= $bestDf || $term === $word) {
+                continue;
+            }
+            if (self::withinOne($w, mb_str_split($term))) {
+                $best = $term; $bestDf = $df;
+            }
+        }
+        return $best;
+    }
+
+    /** @param string[] $a @param string[] $b are the two letter lists at most one edit apart (replace, insert, delete or swap two neighbours)? */
+    private static function withinOne(array $a, array $b): bool
+    {
+        $la = count($a); $lb = count($b);
+        $i = 0;
+        while ($i < $la && $i < $lb && $a[$i] === $b[$i]) { $i++; }
+        if ($i === $la && $i === $lb) {
+            return true;
+        }
+        if ($la === $lb) {
+            if (array_slice($a, $i + 1) === array_slice($b, $i + 1)) { return true; }   // one letter replaced
+            return $i + 1 < $la && $a[$i] === $b[$i + 1] && $a[$i + 1] === $b[$i] && array_slice($a, $i + 2) === array_slice($b, $i + 2);   // two neighbours swapped
+        }
+        if ($la === $lb + 1) { return array_slice($a, $i + 1) === array_slice($b, $i); }
+        if ($lb === $la + 1) { return array_slice($a, $i) === array_slice($b, $i + 1); }
+        return false;
+    }
+
     /** True when every term is already in the packed format. */
     public function isCompact(): bool
     {

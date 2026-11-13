@@ -1,5 +1,16 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.18.0
+
+- **EN** **The same wish, typed in different ways, now gets the same answer.** A search typed without spaces ("ท้องเสียขณะตั้งครรภ์") is cut into the words the articles really use (ท้องเสีย, ตั้งครรภ์), and linking wording such as "ขณะ", "ตอน", "ระหว่าง", "อยู่" is left out. A **rule whose phrase stands for words of the search** (for example the group "ตอนท้อง, ขณะท้อง, ท้องอยู่, ตั้งครรภ์, คนท้อง") replaces those words, so the "ท้อง" in "ท้องเสียตอนท้อง" is no longer satisfied by any article about an upset stomach.
+- **EN** **Typing mistakes are corrected.** A Thai word that no article contains, and that is one letter away from a word they use a lot (ครรค์ -> ครรภ์), is searched as the correct word.
+- **EN** With the precision mode on, **every article that really matches is shown**: "Maximum results per search" no longer cuts the list. It only limits the list when the precision mode is off (where weak matches are used to fill it).
+- **EN** Fixed: question wording such as "แบบไหน" could be joined with its neighbour into a word that is not a question word. A title that says the search words close together is now recognised also when one of them comes from a rule.
+- **ไทย** **ความต้องการเดียวกันที่พิมพ์ต่างกัน ได้คำตอบเดียวกัน** คำค้นที่พิมพ์ติดกันไม่เว้นวรรค ("ท้องเสียขณะตั้งครรภ์") ถูกตัดเป็นคำที่บทความใช้จริง (ท้องเสีย, ตั้งครรภ์) และคำเชื่อมอย่าง "ขณะ" "ตอน" "ระหว่าง" "อยู่" ไม่นับเป็นคำค้น **กฎที่วลีของมันแทนคำในคำค้น** (เช่นกลุ่ม "ตอนท้อง, ขณะท้อง, ท้องอยู่, ตั้งครรภ์, คนท้อง") จะมาแทนคำเหล่านั้น คำว่า "ท้อง" ใน "ท้องเสียตอนท้อง" จึงไม่ถูกบทความเรื่องท้องเสียทั่วไปทำให้ผ่านอีก
+- **ไทย** **แก้คำพิมพ์ผิด** คำไทยที่ไม่มีในบทความใดเลย และห่างจากคำที่บทความใช้บ่อยเพียงหนึ่งตัวอักษร (ครรค์ -> ครรภ์) จะถูกค้นเป็นคำที่ถูก
+- **ไทย** เมื่อเปิดโหมดความแม่นยำ **แสดงทุกบทความที่ตรงจริง** "จำนวนผลสูงสุด" ไม่ตัดรายการอีก ใช้จำกัดความยาวรายการเฉพาะเมื่อปิดโหมดความแม่นยำ (ซึ่งต้องเอาผลที่ตรงน้อยมาเติม)
+- **ไทย** แก้: คำถามอย่าง "แบบไหน" อาจถูกรวมกับคำข้างเคียงเป็นคำที่ไม่ใช่คำถาม และตอนนี้รู้จักชื่อเรื่องที่มีคำค้นอยู่ใกล้กันแม้คำหนึ่งมาจากกฎ
+
 ## 0.17.0
 
 - **EN** **Rebuilding the index can no longer leave the search half built.** The new index is written to staging copies and swapped in only when it is complete, so a rebuild that fails or is cut off (for example by a server "504 Gateway Time-out") leaves the old index untouched. The rebuild also carries on after the browser is cut off, and the dashboard keeps asking how far it has got ("the server is slow but is still building the index... 1,200 / 3,267") instead of showing an error. A rebuild that stops reporting for 2 minutes is shown as failed, with a message that the old index is intact.
