@@ -31,6 +31,10 @@ final class Precision
     private array $unitDf = [];
     /** @var array<int,string[]> a wish that a rule turned into alternatives: an article must have any one of them */
     private array $concepts = [];
+    /** the article being judged (short words are looked up as words of that article, not as pieces of longer words) */
+    private int $curId = 0;
+    /** @var array<string,string[]> */
+    private array $segCache = [];
 
     public function __construct(
         private DatabaseInterface $db,
@@ -60,6 +64,7 @@ final class Precision
         $keepSem = array_flip(array_slice($semantic, 0, max(0, $this->keepSemantic)));
         $rows = [];
         foreach ($ids as $pos => $id) {
+            $this->curId = (int) $id;
             $t = $texts[$id] ?? null;
             if ($t === null) {
                 $rows[] = [$id, 9, 0, $pos, ['tier' => 9, 'why' => 'no text']];
@@ -210,11 +215,39 @@ final class Precision
             return false;
         }
         foreach ($this->formsOf($word) as $f) {
-            if (ctype_digit($f) ? preg_match('/(?<![\d])' . $f . '(?![\d])/u', $text) === 1 : mb_strpos($text, $f) !== false) {
+            if (ctype_digit($f)) {
+                if (preg_match('/(?<![\d])' . $f . '(?![\d])/u', $text) === 1) {
+                    return true;
+                }
+            } elseif ($this->isShort($f)) {
+                if ($this->hasShort($text, $f)) {
+                    return true;
+                }
+            } elseif (mb_strpos($text, $f) !== false) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** A Thai word of up to three letters (ยา, นม, ไม่, ลูก) is often a piece of a longer one (น้ำยา, นมัสการ, ลูกชิ้น). */
+    private function isShort(string $w): bool
+    {
+        return mb_strlen($w) <= 3 && preg_match('/^\p{Thai}+$/u', $w) === 1;
+    }
+
+    /**
+     * Is the short word a word of its own in this text? A long text (the body) is checked against the index, which holds the words ICU found;
+     * a short field (title, tags, description) is cut into words here.
+     */
+    private function hasShort(string $text, string $w): bool
+    {
+        if (mb_strlen($text) > 700 && $this->curId > 0) {
+            return isset($this->bm->docsOf($w)[$this->curId]);
+        }
+        $k = md5($text);
+        $this->segCache[$k] ??= $this->tk->tokenize($text);
+        return in_array($w, $this->segCache[$k], true);
     }
 
     private function allIn(array $words, string $text): bool

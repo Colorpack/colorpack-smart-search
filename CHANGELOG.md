@@ -1,5 +1,14 @@
 # Changelog / บันทึกการเปลี่ยนแปลง
 
+## 0.18.1
+
+- **EN** Fixed: a short Thai word such as "ยา" was found inside longer words ("น้ำยา", "ขนมจีนน้ำยา"), so a search for medicine returned an article about vermicelli with curry. A word of up to three letters now has to be a word of its own in the article (the index knows the words ICU found; titles, tags and descriptions are cut into words on the spot).
+- **EN** Fixed: in a sentence, words that often stand next to others (ห้าม, ไม่, กิน, ใช้, ได้ ...) could be joined into a "word" that does not exist ("คนท้องห้าม", "คนท้องไม่") and leave no result. They are now always separate words.
+- **EN** A rule such as `ยา + ไม่ควร = ห้ามกิน, ห้ามใช้, ไม่ควรกิน, ...` no longer makes the first part ("ยา") match its own alternatives, and the plain verb of the search (กิน, ใช้) is no longer required when the alternatives already say it.
+- **ไทย** แก้: คำไทยสั้น ๆ อย่าง "ยา" เคยถูกพบข้างในคำที่ยาวกว่า ("น้ำยา" "ขนมจีนน้ำยา") ค้นหาเรื่องยาจึงได้บทความขนมจีนน้ำยา ตอนนี้คำที่ยาวไม่เกินสามตัวอักษรต้องเป็นคำของตัวเองในบทความ (ดัชนีรู้คำที่ ICU ตัดไว้ ส่วนชื่อเรื่อง แท็ก และคำอธิบายจะถูกตัดคำตอนค้น)
+- **ไทย** แก้: ในประโยค คำที่อยู่ติดกับคำอื่นบ่อย (ห้าม ไม่ กิน ใช้ ได้ ...) เคยถูกรวมเป็น "คำ" ที่ไม่มีจริง ("คนท้องห้าม" "คนท้องไม่") จนไม่ได้ผลลัพธ์ ตอนนี้แยกเป็นคำเสมอ
+- **ไทย** กฎอย่าง `ยา + ไม่ควร = ห้ามกิน, ห้ามใช้, ไม่ควรกิน, ...` ไม่ทำให้ส่วนแรก ("ยา") ไปตรงกับคำทางขวาของตัวเองอีก และไม่ต้องหาคำกริยา (กิน ใช้) ซ้ำเมื่อคำทางขวาบอกการกระทำอยู่แล้ว
+
 ## 0.18.0
 
 - **EN** **The same wish, typed in different ways, now gets the same answer.** A search typed without spaces ("ท้องเสียขณะตั้งครรภ์") is cut into the words the articles really use (ท้องเสีย, ตั้งครรภ์), and linking wording such as "ขณะ", "ตอน", "ระหว่าง", "อยู่" is left out. A **rule whose phrase stands for words of the search** (for example the group "ตอนท้อง, ขณะท้อง, ท้องอยู่, ตั้งครรภ์, คนท้อง") replaces those words, so the "ท้อง" in "ท้องเสียตอนท้อง" is no longer satisfied by any article about an upset stomach.

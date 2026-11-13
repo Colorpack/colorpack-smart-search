@@ -125,6 +125,27 @@ final class Bm25
         return false;
     }
 
+    /** @var array<string,array<int,true>> posting lists already unpacked in this request (never saved with the index) */
+    private static array $idCache = [];
+
+    /** The articles that contain this word as a word of its own (not as a piece of a longer word). @return array<int,true> */
+    public function docsOf(string $term): array
+    {
+        $key = spl_object_id($this) . '|' . $term;
+        if (isset(self::$idCache[$key])) {
+            return self::$idCache[$key];
+        }
+        $p = $this->postings[$term] ?? null;
+        $ids = [];
+        if (is_array($p)) {
+            foreach ($p as $id => $_) { $ids[(int) $id] = true; }
+        } elseif (is_string($p) && $p !== '') {
+            $u = unpack('N*', $p);
+            for ($i = 1, $c = count($u); $i < $c; $i += 2) { $ids[$u[$i]] = true; }
+        }
+        return self::$idCache[$key] = $ids;
+    }
+
     /** True when every term is already in the packed format. */
     public function isCompact(): bool
     {

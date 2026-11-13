@@ -237,6 +237,8 @@ final class SearchService
                 }
             }
             $concepts[] = $alts;
+            // the alternatives already say the action ("ห้ามกิน", "ห้ามใช้"): the plain verb of the search is no longer a separate word to find
+            $units = array_values(array_filter($units, static fn ($u) => !in_array($u, ['กิน', 'ใช้', 'ทาน', 'ดื่ม', 'รับประทาน'], true)));
         }
         $terms = array_values($terms);
         // a rule whose phrase stands for words of the search ("ตอนท้อง", "ท้องอยู่" = pregnant) replaces those words: otherwise the "ท้อง" in
@@ -303,7 +305,7 @@ final class SearchService
             $info = [];
             $hidden = 0;
             if ($usePrecision) {
-                $pr = (new Precision($this->db, $tk, $bm, $fired, $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
+                $pr = (new Precision($this->db, $tk, $bm, array_filter($fired, static fn ($k) => !str_contains((string) $k, '+'), ARRAY_FILTER_USE_KEY), $this->settings->precisionCommonPct(), $this->settings->precisionMaxTier(), $this->settings->precisionKeepSemantic()))
                     ->apply($units, $fused, array_keys($vec), $qt['df'], $concepts);
                 $fused = $pr['ids'];
                 $info = $pr['info'];

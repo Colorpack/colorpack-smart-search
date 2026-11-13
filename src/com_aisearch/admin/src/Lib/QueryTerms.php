@@ -17,6 +17,8 @@ final class QueryTerms
     private const WORDS = ['ทําไม', 'ทำไม', 'ถึง', 'ไหน', 'กว่า', 'กัน', 'เป็น', 'ตอน', 'จะ', 'ไง', 'ยัง', 'ทํา', 'ทำ', 'อะไร', 'อย่างไร', 'ไหม', 'นะ', 'ค่ะ', 'คะ', 'ครับ', 'ต้อง', 'ควร', 'ดี', 'เมื่อ', 'ให้', 'ขณะ', 'ระหว่าง', 'อยู่'];
     /** Words that are question wording only when followed by another word of the pattern: "แบบ" + "ไหน". */
     private const PAIRS = [['แบบ', 'ไหน'], ['ยี่ห้อ', 'ไหน'], ['อัน', 'ไหน'], ['วิธี', 'ไหน']];
+    /** Words that stand next to many other words and are never the second half of a compound (ห้าม, ไม่, ได้, กิน ...). */
+    private const NEVER_JOIN = ['ห้าม', 'ไม่', 'ได้', 'มี', 'เป็น', 'กับ', 'แก่', 'แด่', 'ของ', 'ใน', 'จาก', 'ถึง', 'แล้ว', 'จะ', 'ยัง', 'คือ', 'เพื่อ', 'ซึ่ง', 'หรือ', 'และ', 'ก็', 'ให้', 'ต้อง', 'ควร', 'อย่า', 'ช่วย', 'กิน', 'ใช้', 'ทาน', 'ดื่ม', 'รับประทาน'];
     private const KEEP_APART = ['เดือน', 'ขวบ', 'ปี', 'สัปดาห์', 'อาทิตย์', 'วัน', 'month', 'months', 'year', 'years', 'week', 'weeks', 'day', 'days'];
 
     /** @param ?\Closure $known function(string[]): array<string,bool>, which of these strings are words that the articles themselves contain? */
@@ -75,7 +77,7 @@ final class QueryTerms
         $n = count($raw);
         $drop = $this->dropMask($raw);   // question wording, also a "แบบ" that is followed by "ไหน"
         // a piece that cannot be part of a longer word: dropped wording, a number, a unit of time
-        $apart = static fn (int $i) => $drop[$i] || ctype_digit($raw[$i]) || in_array($raw[$i], self::KEEP_APART, true);
+        $apart = static fn (int $i) => $drop[$i] || ctype_digit($raw[$i]) || in_array($raw[$i], self::KEEP_APART, true) || in_array($raw[$i], self::NEVER_JOIN, true);
         $cands = [];
         for ($i = 0; $i < $n; $i++) {
             for ($j = $i + 1; $j < min($n, $i + 3); $j++) {
@@ -172,7 +174,7 @@ final class QueryTerms
     /** Do these two neighbours stand together in the articles more often than not? */
     private function joins(string $a, string $b): bool
     {
-        if (ctype_digit($a) || ctype_digit($b) || in_array($a, self::KEEP_APART, true) || in_array($b, self::KEEP_APART, true)) {
+        if (ctype_digit($a) || ctype_digit($b) || in_array($a, self::KEEP_APART, true) || in_array($b, self::KEEP_APART, true) || in_array($a, self::NEVER_JOIN, true) || in_array($b, self::NEVER_JOIN, true)) {
             return false;
         }
         $pair = $this->bm->docFreq($a . ThaiTokenizer::JOIN . $b);
