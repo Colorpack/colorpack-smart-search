@@ -29,6 +29,7 @@ $sn = $this->snapshot;
   <div><b><?php echo number_format((int) ($sn['total'] ?? 0)); ?></b><br><span class="wd-sub">คำที่ดัชนีใช้อยู่</span></div>
   <div><b><?php echo number_format((int) ($sn['base'] ?? 0)); ?></b><br><span class="wd-sub">คำพื้นฐาน (ไฟล์)</span></div>
   <div><b><?php echo number_format((int) ($sn['starter'] ?? 0)); ?></b><br><span class="wd-sub">ชุดเริ่มต้นเว็บแม่และเด็ก</span></div>
+  <div><b><?php echo number_format((int) ($sn['mined'] ?? 0)); ?></b><br><span class="wd-sub">ขุดจากบทความของเว็บ</span></div>
   <div><b><?php echo number_format((int) ($sn['site'] ?? 0)); ?></b><br><span class="wd-sub">จากแท็กและหมวด</span></div>
   <div><b><?php echo number_format((int) ($sn['manual'] ?? 0)); ?></b><br><span class="wd-sub">เพิ่มเอง</span></div>
 </div>

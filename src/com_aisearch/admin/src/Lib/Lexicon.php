@@ -88,9 +88,10 @@ final class Lexicon
     /** All the words as they are now: files, the words table (editors and the site's own tag and category names). @return array{words:array<string,true>,split:array<string,true>,counts:array<string,int>} */
     public static function collect(DatabaseInterface $db): array
     {
-        $words = []; $split = []; $counts = ['base' => 0, 'starter' => 0, 'site' => 0, 'manual' => 0, 'split' => 0];
+        $words = []; $split = []; $counts = ['base' => 0, 'starter' => 0, 'mined' => 0, 'site' => 0, 'manual' => 0, 'split' => 0];
         $tk = new ThaiTokenizer();
-        foreach (['base' => __DIR__ . '/../Lexicon/th_base.txt', 'starter' => __DIR__ . '/../Lexicon/th_domain.txt'] as $kind => $file) {
+        foreach (['base' => __DIR__ . '/../Lexicon/th_base.txt', 'starter' => __DIR__ . '/../Lexicon/th_domain.txt',
+            'mined' => __DIR__ . '/../Lexicon/th_mined.txt'] as $kind => $file) {
             foreach (self::fileWords($file) as $w) {
                 $n = $tk->normalize($w);
                 if ($n !== '' && mb_strlen($n) >= 2) { $words[$n] = true; $counts[$kind]++; }

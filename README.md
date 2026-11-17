@@ -58,6 +58,12 @@
 
 ได้ไฟล์ `dist/colorpack_smart_search.zip`
 
+## เครดิต
+
+คลังคำ `th_mined.txt` ขุดมาจากบทความของเว็บด้วยตัวตัดคำ
+[OpenThai2.0-LATTE-WordSeg-Lite](https://huggingface.co/iapp/OpenThai2.0-LATTE-WordSeg-Lite)
+ของ iApp Technology สัญญาอนุญาต CC-BY-SA-4.0 ตัวตัดคำไม่ได้อยู่ในแพ็กเกจนี้
+
 ## สัญญาอนุญาต
 
 GNU General Public License เวอร์ชัน 2 หรือใหม่กว่า (GPL-2.0-or-later) ดูไฟล์ [LICENSE](LICENSE)
@@ -125,6 +131,12 @@ Thai-aware search for Joomla: **correct Thai word segmentation**, BM25 ranking a
 ```
 
 This produces `dist/colorpack_smart_search.zip`.
+
+## Credits
+
+The word list `th_mined.txt` was mined from the site's own articles with the
+[OpenThai2.0-LATTE-WordSeg-Lite](https://huggingface.co/iapp/OpenThai2.0-LATTE-WordSeg-Lite)
+segmenter by iApp Technology, licensed CC-BY-SA-4.0. The segmenter itself is not part of this package.
 
 ## Licence
 
