@@ -35,7 +35,7 @@
 
 ## ติดตั้ง
 
-1. ดาวน์โหลด `colorpack_smart_search.zip` จากหน้า Releases (หรือสร้างเองด้วย `./build.sh`)
+1. ดาวน์โหลด `colorpack_smart_search-<รุ่น>.zip` จากหน้า Releases (หรือสร้างเองด้วย `./build.sh`)
 2. Joomla ผู้ดูแล → System → Install → Extensions แล้วอัปโหลดไฟล์ zip
 3. Components → Colorpack Smart Search → กด **Build index**
 4. สร้างเมนู: Menus → New Menu Item → **Colorpack Smart Search → Search page** แล้วเลือกเลย์เอาต์ในช่อง *Choose a Layout*
@@ -56,7 +56,7 @@
 ./build.sh
 ```
 
-ได้ไฟล์ `dist/colorpack_smart_search.zip`
+ได้ไฟล์ `dist/colorpack_smart_search-<รุ่น>.zip` เช่น `colorpack_smart_search-0.20.0.zip`
 
 ## เครดิต
 
@@ -109,7 +109,7 @@ Thai-aware search for Joomla: **correct Thai word segmentation**, BM25 ranking a
 
 ## Install
 
-1. Download `colorpack_smart_search.zip` from Releases (or build it with `./build.sh`).
+1. Download `colorpack_smart_search-<version>.zip` from Releases (or build it with `./build.sh`).
 2. Joomla administrator → System → Install → Extensions, then upload the zip.
 3. Components → Colorpack Smart Search → press **Build index**.
 4. Create a menu item: Menus → New Menu Item → **Colorpack Smart Search → Search page**, and pick a layout in *Choose a Layout*.
@@ -130,7 +130,7 @@ Thai-aware search for Joomla: **correct Thai word segmentation**, BM25 ranking a
 ./build.sh
 ```
 
-This produces `dist/colorpack_smart_search.zip`.
+This produces `dist/colorpack_smart_search-<version>.zip`, for example `colorpack_smart_search-0.20.0.zip`.
 
 ## Credits
 
