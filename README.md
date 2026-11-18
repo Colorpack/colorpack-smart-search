@@ -56,7 +56,7 @@
 ./build.sh
 ```
 
-ได้ไฟล์ `dist/colorpack_smart_search-<รุ่น>.zip` เช่น `colorpack_smart_search-0.20.0.zip`
+ได้ไฟล์ `dist/colorpack_smart_search-<รุ่น>.zip` เช่น `colorpack_smart_search-0.20.1.zip`
 
 ## เครดิต
 
@@ -130,7 +130,7 @@ Thai-aware search for Joomla: **correct Thai word segmentation**, BM25 ranking a
 ./build.sh
 ```
 
-This produces `dist/colorpack_smart_search-<version>.zip`, for example `colorpack_smart_search-0.20.0.zip`.
+This produces `dist/colorpack_smart_search-<version>.zip`, for example `colorpack_smart_search-0.20.1.zip`.
 
 ## Credits
 
